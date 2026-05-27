@@ -2,71 +2,20 @@
   "risk_top5": [
     {
       "sku": {
-        "id": "HOBBIES_1_295",
-        "name": "우디 퍼퓸 200ml (#295)",
-        "category": "프래그런스",
-        "category_raw": "HOBBIES_1"
-      },
-      "current_stock": 37,
-      "forecast_28d_demand": 235.06,
-      "forecast_28d_p90": 661.42,
-      "safety_stock": 40.11,
-      "reorder_point": 91.54,
-      "stockout_probability": 0.6129,
-      "days_until_stockout": 5,
-      "recommended_order": 55,
-      "turnover_rate_annual": 82.82
-    },
-    {
-      "sku": {
-        "id": "HOBBIES_1_178",
-        "name": "플로럴 오 드 뚜왈렛 100ml (#178)",
-        "category": "프래그런스",
-        "category_raw": "HOBBIES_1"
-      },
-      "current_stock": 57,
-      "forecast_28d_demand": 226.29,
-      "forecast_28d_p90": 674.61,
-      "safety_stock": 40.89,
-      "reorder_point": 90.26,
-      "stockout_probability": 0.4417,
-      "days_until_stockout": 8,
-      "recommended_order": 34,
-      "turnover_rate_annual": 51.75
-    },
-    {
-      "sku": {
-        "id": "FOODS_1_019",
-        "name": "모이스트 글로우 토너 100ml (#019)",
+        "id": "FOODS_1_110",
+        "name": "모이스트 글로우 토너 30ml (#110)",
         "category": "스킨케어",
         "category_raw": "FOODS_1"
       },
-      "current_stock": 68,
-      "forecast_28d_demand": 250.45,
-      "forecast_28d_p90": 591.38,
-      "safety_stock": 34.45,
-      "reorder_point": 93.75,
-      "stockout_probability": 0.4102,
-      "days_until_stockout": 9,
-      "recommended_order": 26,
-      "turnover_rate_annual": 48.01
-    },
-    {
-      "sku": {
-        "id": "FOODS_2_128",
-        "name": "글로우 쿠션 50ml (#128)",
-        "category": "메이크업",
-        "category_raw": "FOODS_2"
-      },
-      "current_stock": 49,
-      "forecast_28d_demand": 178.62,
-      "forecast_28d_p90": 475.28,
-      "safety_stock": 28.18,
-      "reorder_point": 68.69,
-      "stockout_probability": 0.3783,
-      "days_until_stockout": 9,
-      "recommended_order": 20,
-      "turnover_rate_annual": 47.52
+      "current_stock": 17,
+      "forecast_28d_demand": 97.12,
+      "forecast_28d_p90": 239.07,
+      "safety_stock": 14.5,
+      "reorder_point": 15.02,
+      "stockout_probability": 0.8048,
+      "days_until_stockout": 12,
+      "recommended_order": 0,
+      "turnover_rate_annual": 74.47
     },
     {
       "sku": {
@@ -80,10 +29,61 @@
       "forecast_28d_p90": 508.0,
       "safety_stock": 29.51,
       "reorder_point": 81.18,
-      "stockout_probability": 0.3628,
+      "stockout_probability": 0.7952,
       "days_until_stockout": 9,
       "recommended_order": 19,
       "turnover_rate_annual": 45.44
+    },
+    {
+      "sku": {
+        "id": "FOODS_1_019",
+        "name": "모이스트 글로우 토너 100ml (#019)",
+        "category": "스킨케어",
+        "category_raw": "FOODS_1"
+      },
+      "current_stock": 68,
+      "forecast_28d_demand": 250.45,
+      "forecast_28d_p90": 591.38,
+      "safety_stock": 34.45,
+      "reorder_point": 93.75,
+      "stockout_probability": 0.7948,
+      "days_until_stockout": 9,
+      "recommended_order": 26,
+      "turnover_rate_annual": 48.01
+    },
+    {
+      "sku": {
+        "id": "FOODS_2_276",
+        "name": "글로우 쿠션 500ml (#276)",
+        "category": "메이크업",
+        "category_raw": "FOODS_2"
+      },
+      "current_stock": 137,
+      "forecast_28d_demand": 295.78,
+      "forecast_28d_p90": 578.18,
+      "safety_stock": 31.62,
+      "reorder_point": 98.03,
+      "stockout_probability": 0.7824,
+      "days_until_stockout": 13,
+      "recommended_order": 0,
+      "turnover_rate_annual": 28.14
+    },
+    {
+      "sku": {
+        "id": "FOODS_2_244",
+        "name": "벨벳 매트 립스틱 100ml (#244)",
+        "category": "메이크업",
+        "category_raw": "FOODS_2"
+      },
+      "current_stock": 65,
+      "forecast_28d_demand": 178.47,
+      "forecast_28d_p90": 406.7,
+      "safety_stock": 22.66,
+      "reorder_point": 61.39,
+      "stockout_probability": 0.7818,
+      "days_until_stockout": 12,
+      "recommended_order": 0,
+      "turnover_rate_annual": 35.79
     }
   ],
   "excess_top5": [
@@ -99,7 +99,7 @@
       "forecast_28d_p90": 349.24,
       "safety_stock": 19.92,
       "reorder_point": 54.44,
-      "stockout_probability": 0.0,
+      "stockout_probability": 0.3297,
       "days_until_stockout": null,
       "recommended_order": 0,
       "turnover_rate_annual": 9.5
@@ -116,7 +116,7 @@
       "forecast_28d_p90": 476.89,
       "safety_stock": 26.05,
       "reorder_point": 84.62,
-      "stockout_probability": 0.0,
+      "stockout_probability": 0.3104,
       "days_until_stockout": null,
       "recommended_order": 0,
       "turnover_rate_annual": 9.75
@@ -133,7 +133,7 @@
       "forecast_28d_p90": 475.44,
       "safety_stock": 26.31,
       "reorder_point": 83.29,
-      "stockout_probability": 0.0,
+      "stockout_probability": 0.3274,
       "days_until_stockout": null,
       "recommended_order": 0,
       "turnover_rate_annual": 9.98
@@ -150,7 +150,7 @@
       "forecast_28d_p90": 239.07,
       "safety_stock": 14.5,
       "reorder_point": 15.02,
-      "stockout_probability": 0.0,
+      "stockout_probability": 0.3825,
       "days_until_stockout": null,
       "recommended_order": 0,
       "turnover_rate_annual": 10.13
@@ -167,12 +167,12 @@
       "forecast_28d_p90": 239.07,
       "safety_stock": 14.5,
       "reorder_point": 15.02,
-      "stockout_probability": 0.0,
+      "stockout_probability": 0.3866,
       "days_until_stockout": null,
       "recommended_order": 0,
       "turnover_rate_annual": 10.21
     }
   ],
-  "estimated_revenue_loss_krw": 5927537.0,
+  "estimated_revenue_loss_krw": 9873794.0,
   "estimated_cash_trapped_krw": 3238083.0
 }

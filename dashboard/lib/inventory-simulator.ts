@@ -5,12 +5,18 @@
  * The Python version is the authority; this TS version exists so the
  * Executive simulator widget feels instant (no API round-trip).
  *
- * Formulas:
- *   stockout_prob ≈ 1 - Φ((stock - μ_lead) / σ_lead)
- *                    where σ_lead = (sum(P90_lead) - sum(P10_lead)) / 2.5631
- *   projected_inventory[t] = stock - cumulative_sum(p50[:t+1])
- *                           + (order_qty if t == lead_time else 0)
- *   days_until_stockout = first t where projected[t] < 0
+ * Formulas — two-phase stockout probability, takes the worse of:
+ *   P_lead    = P(demand > current_stock) over [0, lead_time)
+ *                — order not yet arrived, so orderQty does NOT help
+ *   P_horizon = P(demand_28d > current_stock + orderQty) over full horizon
+ *                — order has arrived by then
+ *   stockout_prob = max(P_lead, P_horizon)
+ *
+ * This makes the simulator gauge respond meaningfully to orderQty:
+ * placing a big enough order drives P_horizon → 0, so the gauge falls
+ * to the (fixed) P_lead floor. With a tiny order, P_horizon dominates.
+ *
+ * Both σ values come from the P90-P10 spread / 2.5631 (80% interval ≈ ±1.28σ).
  */
 
 const P10_P90_TO_SIGMA = 2.5631;
@@ -75,25 +81,36 @@ export function simulateStockout({
     projectedInventory[t] = stock;
   }
 
-  // Normal-approx stockout probability over the lead time window
+  // Two-phase probability — order quantity only helps AFTER lead time
   const leadEnd = Math.min(orderLeadTime, horizon);
   const sumSlice = (arr: number[], end: number) => {
     let s = 0;
     for (let i = 0; i < end; i++) s += arr[i];
     return s;
   };
-  const muLead = sumSlice(p50Daily, leadEnd);
-  const lowerLead = sumSlice(p10Daily, leadEnd);
-  const upperLead = sumSlice(p90Daily, leadEnd);
-  const sigmaLead = (upperLead - lowerLead) / P10_P90_TO_SIGMA;
+  const sumAll = (arr: number[]) => sumSlice(arr, arr.length);
 
-  let prob: number;
-  if (sigmaLead <= 0) {
-    prob = currentStock < muLead ? 1.0 : 0.0;
-  } else {
-    const z = (currentStock - muLead) / sigmaLead;
-    prob = 1.0 - normalCdf(z);
-  }
+  // Phase 1: lead-time stockout — orderQty has not arrived yet
+  const muLead = sumSlice(p50Daily, leadEnd);
+  const sigmaLead =
+    (sumSlice(p90Daily, leadEnd) - sumSlice(p10Daily, leadEnd)) / P10_P90_TO_SIGMA;
+  const probLead =
+    sigmaLead <= 0
+      ? currentStock < muLead ? 1.0 : 0.0
+      : 1.0 - normalCdf((currentStock - muLead) / sigmaLead);
+
+  // Phase 2: horizon stockout — order has arrived, total demand vs total stock
+  const muHorizon = sumAll(p50Daily);
+  const sigmaHorizon =
+    (sumAll(p90Daily) - sumAll(p10Daily)) / P10_P90_TO_SIGMA;
+  const totalStock = currentStock + orderQty;
+  const probHorizon =
+    sigmaHorizon <= 0
+      ? totalStock < muHorizon ? 1.0 : 0.0
+      : 1.0 - normalCdf((totalStock - muHorizon) / sigmaHorizon);
+
+  // Worse of the two phases — guardrails clip to [0, 1]
+  let prob = Math.max(probLead, probHorizon);
   prob = Math.max(0, Math.min(1, prob));
 
   return {

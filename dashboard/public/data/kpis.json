@@ -21,23 +21,23 @@
   },
   "service_level": {
     "label": "서비스 레벨",
-    "value": "92.8%",
-    "value_raw": 0.9283406453499263,
+    "value": "43.0%",
+    "value_raw": 0.43035215838784124,
     "delta_pp": null,
-    "delta_label": "목표 95% 대비 ▼2.2%p",
+    "delta_label": "목표 95% 대비 ▼52.0%p",
     "delta_tone": "bad",
     "unit": "pct",
-    "direction": "good"
+    "direction": "bad"
   },
   "risk_sku_count": {
     "label": "결품 위험 SKU",
-    "value": "5건",
-    "value_raw": 5.0,
+    "value": "50건",
+    "value_raw": 50.0,
     "delta_pp": null,
     "delta_label": "이번 주 발주 검토 필요",
-    "delta_tone": "neutral",
+    "delta_tone": "bad",
     "unit": "count",
-    "direction": "good"
+    "direction": "bad"
   },
   "cash_trapped": {
     "label": "과잉재고 묶인 현금",

@@ -158,7 +158,7 @@ export function InventorySimulator({
         {/* Stockout gauge */}
         <div className="rounded-lg bg-surface-2 border border-border p-4">
           <div className="text-xs text-muted uppercase tracking-wide font-medium mb-1">
-            7일 결품 확률
+            28일 결품 확률
           </div>
           <div
             className={cn(

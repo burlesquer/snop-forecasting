@@ -93,17 +93,29 @@ def stockout_probability(
             days_until = t + 1
         inventory[t] = stock
 
-    # Normal-approximation stockout probability over lead time window
-    lead_window_p50 = float(np.sum(p50_daily[:order_lead_time]))
-    lead_window_p10 = float(np.sum(p10_daily[:order_lead_time]))
-    lead_window_p90 = float(np.sum(p90_daily[:order_lead_time]))
-    sigma_lead = (lead_window_p90 - lead_window_p10) / P10_P90_TO_SIGMA
+    # Two-phase stockout probability — mirrors TS lib/inventory-simulator.ts
+    # Phase 1: lead time (order has not arrived) — orderQty does NOT help
+    lead_p50 = float(np.sum(p50_daily[:order_lead_time]))
+    lead_p10 = float(np.sum(p10_daily[:order_lead_time]))
+    lead_p90 = float(np.sum(p90_daily[:order_lead_time]))
+    sigma_lead = (lead_p90 - lead_p10) / P10_P90_TO_SIGMA
     if sigma_lead <= 0:
-        prob = 1.0 if current_stock < lead_window_p50 else 0.0
+        prob_lead = 1.0 if current_stock < lead_p50 else 0.0
     else:
-        # Probability demand_during_lead > current_stock
-        z = (current_stock - lead_window_p50) / sigma_lead
-        prob = 1.0 - _normal_cdf(z)
+        prob_lead = 1.0 - _normal_cdf((current_stock - lead_p50) / sigma_lead)
+
+    # Phase 2: full horizon (order has arrived) — current + orderQty vs total demand
+    horizon_p50 = float(np.sum(p50_daily))
+    horizon_p10 = float(np.sum(p10_daily))
+    horizon_p90 = float(np.sum(p90_daily))
+    sigma_horizon = (horizon_p90 - horizon_p10) / P10_P90_TO_SIGMA
+    total_stock = current_stock + float(order_qty)
+    if sigma_horizon <= 0:
+        prob_horizon = 1.0 if total_stock < horizon_p50 else 0.0
+    else:
+        prob_horizon = 1.0 - _normal_cdf((total_stock - horizon_p50) / sigma_horizon)
+
+    prob = max(prob_lead, prob_horizon)
     prob = max(0.0, min(1.0, prob))
 
     return {
