@@ -1,0 +1,418 @@
+{
+  "feature_count": 10,
+  "sample_size": 1000,
+  "summary": [
+    {
+      "name": "lag7",
+      "name_kr": "지난 주 판매",
+      "mean_abs_shap": 0.5244
+    },
+    {
+      "name": "lag14",
+      "name_kr": "2주 전 판매",
+      "mean_abs_shap": 0.2812
+    },
+    {
+      "name": "lag28",
+      "name_kr": "지난 달 판매",
+      "mean_abs_shap": 0.2334
+    },
+    {
+      "name": "sell_price",
+      "name_kr": "판매가",
+      "mean_abs_shap": 0.1196
+    },
+    {
+      "name": "month",
+      "name_kr": "월",
+      "mean_abs_shap": 0.072
+    },
+    {
+      "name": "day",
+      "name_kr": "월중일",
+      "mean_abs_shap": 0.0547
+    },
+    {
+      "name": "dayofweek",
+      "name_kr": "요일",
+      "mean_abs_shap": 0.0527
+    },
+    {
+      "name": "event_code",
+      "name_kr": "이벤트",
+      "mean_abs_shap": 0.0209
+    },
+    {
+      "name": "snap",
+      "name_kr": "SNAP",
+      "mean_abs_shap": 0.0065
+    },
+    {
+      "name": "promotion",
+      "name_kr": "프로모션",
+      "mean_abs_shap": 0.0031
+    }
+  ],
+  "top_sku_forces": [
+    {
+      "sku": {
+        "id": "FOODS_2_019",
+        "name": "샤프 라이너 250ml (#019)",
+        "category": "메이크업",
+        "category_raw": "FOODS_2"
+      },
+      "base_value": 1.629,
+      "prediction": 21.9976,
+      "top_features": [
+        {
+          "name": "lag7",
+          "name_kr": "지난 주 판매",
+          "feature_value": 30.0,
+          "shap_contribution": 0.6588
+        },
+        {
+          "name": "lag14",
+          "name_kr": "2주 전 판매",
+          "feature_value": 27.0,
+          "shap_contribution": 0.3615
+        },
+        {
+          "name": "lag28",
+          "name_kr": "지난 달 판매",
+          "feature_value": 16.0,
+          "shap_contribution": 0.2232
+        },
+        {
+          "name": "sell_price",
+          "name_kr": "판매가",
+          "feature_value": 3.42,
+          "shap_contribution": 0.1272
+        },
+        {
+          "name": "dayofweek",
+          "name_kr": "요일",
+          "feature_value": 6.0,
+          "shap_contribution": 0.0934
+        },
+        {
+          "name": "day",
+          "name_kr": "월중일",
+          "feature_value": 24.0,
+          "shap_contribution": -0.0402
+        },
+        {
+          "name": "month",
+          "name_kr": "월",
+          "feature_value": 4.0,
+          "shap_contribution": 0.036
+        },
+        {
+          "name": "event_code",
+          "name_kr": "이벤트",
+          "feature_value": 4.0,
+          "shap_contribution": 0.0138
+        },
+        {
+          "name": "snap",
+          "name_kr": "SNAP",
+          "feature_value": 0.0,
+          "shap_contribution": -0.0111
+        },
+        {
+          "name": "promotion",
+          "name_kr": "프로모션",
+          "feature_value": 0.0,
+          "shap_contribution": -0.0005
+        }
+      ]
+    },
+    {
+      "sku": {
+        "id": "FOODS_2_197",
+        "name": "하이라이터 스틱 500ml (#197)",
+        "category": "메이크업",
+        "category_raw": "FOODS_2"
+      },
+      "base_value": 1.629,
+      "prediction": 16.913,
+      "top_features": [
+        {
+          "name": "lag7",
+          "name_kr": "지난 주 판매",
+          "feature_value": 24.0,
+          "shap_contribution": 0.5319
+        },
+        {
+          "name": "lag14",
+          "name_kr": "2주 전 판매",
+          "feature_value": 23.0,
+          "shap_contribution": 0.3319
+        },
+        {
+          "name": "lag28",
+          "name_kr": "지난 달 판매",
+          "feature_value": 12.0,
+          "shap_contribution": 0.1311
+        },
+        {
+          "name": "sell_price",
+          "name_kr": "판매가",
+          "feature_value": 3.42,
+          "shap_contribution": 0.1056
+        },
+        {
+          "name": "dayofweek",
+          "name_kr": "요일",
+          "feature_value": 6.0,
+          "shap_contribution": 0.0988
+        },
+        {
+          "name": "day",
+          "name_kr": "월중일",
+          "feature_value": 24.0,
+          "shap_contribution": -0.0418
+        },
+        {
+          "name": "month",
+          "name_kr": "월",
+          "feature_value": 4.0,
+          "shap_contribution": 0.0384
+        },
+        {
+          "name": "event_code",
+          "name_kr": "이벤트",
+          "feature_value": 4.0,
+          "shap_contribution": 0.014
+        },
+        {
+          "name": "snap",
+          "name_kr": "SNAP",
+          "feature_value": 0.0,
+          "shap_contribution": -0.0104
+        },
+        {
+          "name": "promotion",
+          "name_kr": "프로모션",
+          "feature_value": 0.0,
+          "shap_contribution": -0.0005
+        }
+      ]
+    },
+    {
+      "sku": {
+        "id": "FOODS_2_276",
+        "name": "글로우 쿠션 500ml (#276)",
+        "category": "메이크업",
+        "category_raw": "FOODS_2"
+      },
+      "base_value": 1.629,
+      "prediction": 15.7166,
+      "top_features": [
+        {
+          "name": "lag7",
+          "name_kr": "지난 주 판매",
+          "feature_value": 14.0,
+          "shap_contribution": 0.4122
+        },
+        {
+          "name": "lag14",
+          "name_kr": "2주 전 판매",
+          "feature_value": 29.0,
+          "shap_contribution": 0.3826
+        },
+        {
+          "name": "lag28",
+          "name_kr": "지난 달 판매",
+          "feature_value": 14.0,
+          "shap_contribution": 0.1663
+        },
+        {
+          "name": "sell_price",
+          "name_kr": "판매가",
+          "feature_value": 3.42,
+          "shap_contribution": 0.0895
+        },
+        {
+          "name": "dayofweek",
+          "name_kr": "요일",
+          "feature_value": 6.0,
+          "shap_contribution": 0.0863
+        },
+        {
+          "name": "day",
+          "name_kr": "월중일",
+          "feature_value": 24.0,
+          "shap_contribution": -0.0557
+        },
+        {
+          "name": "month",
+          "name_kr": "월",
+          "feature_value": 4.0,
+          "shap_contribution": 0.0342
+        },
+        {
+          "name": "event_code",
+          "name_kr": "이벤트",
+          "feature_value": 4.0,
+          "shap_contribution": 0.0139
+        },
+        {
+          "name": "snap",
+          "name_kr": "SNAP",
+          "feature_value": 0.0,
+          "shap_contribution": -0.0033
+        },
+        {
+          "name": "promotion",
+          "name_kr": "프로모션",
+          "feature_value": 0.0,
+          "shap_contribution": -0.0002
+        }
+      ]
+    },
+    {
+      "sku": {
+        "id": "HOUSEHOLD_1_118",
+        "name": "리치 바디로션 100ml (#118)",
+        "category": "바디케어",
+        "category_raw": "HOUSEHOLD_1"
+      },
+      "base_value": 1.629,
+      "prediction": 15.1271,
+      "top_features": [
+        {
+          "name": "lag7",
+          "name_kr": "지난 주 판매",
+          "feature_value": 21.0,
+          "shap_contribution": 0.5339
+        },
+        {
+          "name": "lag14",
+          "name_kr": "2주 전 판매",
+          "feature_value": 28.0,
+          "shap_contribution": 0.4268
+        },
+        {
+          "name": "dayofweek",
+          "name_kr": "요일",
+          "feature_value": 6.0,
+          "shap_contribution": 0.1342
+        },
+        {
+          "name": "sell_price",
+          "name_kr": "판매가",
+          "feature_value": 0.97,
+          "shap_contribution": -0.0386
+        },
+        {
+          "name": "day",
+          "name_kr": "월중일",
+          "feature_value": 24.0,
+          "shap_contribution": -0.0363
+        },
+        {
+          "name": "lag28",
+          "name_kr": "지난 달 판매",
+          "feature_value": 4.0,
+          "shap_contribution": 0.0279
+        },
+        {
+          "name": "month",
+          "name_kr": "월",
+          "feature_value": 4.0,
+          "shap_contribution": 0.0271
+        },
+        {
+          "name": "event_code",
+          "name_kr": "이벤트",
+          "feature_value": 4.0,
+          "shap_contribution": 0.0166
+        },
+        {
+          "name": "snap",
+          "name_kr": "SNAP",
+          "feature_value": 0.0,
+          "shap_contribution": -0.0032
+        },
+        {
+          "name": "promotion",
+          "name_kr": "프로모션",
+          "feature_value": 0.0,
+          "shap_contribution": -0.0009
+        }
+      ]
+    },
+    {
+      "sku": {
+        "id": "HOUSEHOLD_1_334",
+        "name": "샤워 오일 100ml (#334)",
+        "category": "바디케어",
+        "category_raw": "HOUSEHOLD_1"
+      },
+      "base_value": 1.629,
+      "prediction": 14.1171,
+      "top_features": [
+        {
+          "name": "lag7",
+          "name_kr": "지난 주 판매",
+          "feature_value": 22.0,
+          "shap_contribution": 0.5131
+        },
+        {
+          "name": "lag28",
+          "name_kr": "지난 달 판매",
+          "feature_value": 16.0,
+          "shap_contribution": 0.2652
+        },
+        {
+          "name": "lag14",
+          "name_kr": "2주 전 판매",
+          "feature_value": 11.0,
+          "shap_contribution": 0.1624
+        },
+        {
+          "name": "dayofweek",
+          "name_kr": "요일",
+          "feature_value": 6.0,
+          "shap_contribution": 0.107
+        },
+        {
+          "name": "day",
+          "name_kr": "월중일",
+          "feature_value": 24.0,
+          "shap_contribution": -0.04
+        },
+        {
+          "name": "month",
+          "name_kr": "월",
+          "feature_value": 4.0,
+          "shap_contribution": 0.0326
+        },
+        {
+          "name": "sell_price",
+          "name_kr": "판매가",
+          "feature_value": 0.97,
+          "shap_contribution": -0.0303
+        },
+        {
+          "name": "event_code",
+          "name_kr": "이벤트",
+          "feature_value": 4.0,
+          "shap_contribution": 0.0128
+        },
+        {
+          "name": "snap",
+          "name_kr": "SNAP",
+          "feature_value": 0.0,
+          "shap_contribution": -0.0042
+        },
+        {
+          "name": "promotion",
+          "name_kr": "프로모션",
+          "feature_value": 0.0,
+          "shap_contribution": -0.0003
+        }
+      ]
+    }
+  ]
+}

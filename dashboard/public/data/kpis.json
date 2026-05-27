@@ -1,0 +1,42 @@
+{
+  "forecast_accuracy": {
+    "label": "예측 적중률 (1-WAPE)",
+    "value": "36.1%",
+    "value_raw": 0.360503336025084,
+    "delta_pp": 11.4,
+    "unit": "pct",
+    "direction": "warn"
+  },
+  "inventory_turnover": {
+    "label": "평균 재고회전율 (연환산)",
+    "value": "22.4회",
+    "value_raw": 22.424429502013968,
+    "delta_pp": null,
+    "unit": "ratio",
+    "direction": "good"
+  },
+  "service_level": {
+    "label": "서비스 레벨",
+    "value": "92.8%",
+    "value_raw": 0.9283406453499263,
+    "delta_pp": null,
+    "unit": "pct",
+    "direction": "good"
+  },
+  "risk_sku_count": {
+    "label": "결품 위험 SKU",
+    "value": "5건",
+    "value_raw": 5.0,
+    "delta_pp": null,
+    "unit": "count",
+    "direction": "good"
+  },
+  "cash_trapped": {
+    "label": "과잉재고 묶인 현금",
+    "value": "₩3,238,083",
+    "value_raw": 3238083.4255877696,
+    "delta_pp": null,
+    "unit": "won",
+    "direction": "warn"
+  }
+}

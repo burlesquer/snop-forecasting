@@ -1,0 +1,82 @@
+# ── Secrets ──────────────────────────────────────
+.env
+.env.*
+!.env.example
+**/.kaggle/
+kaggle.json
+access_token
+*.pem
+*.key
+
+# ── Python ───────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.so
+.venv/
+venv/
+.env/
+.python-version
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+
+# ── Node / Next.js ───────────────────────────────
+node_modules/
+.next/
+out/
+dashboard/.next/
+dashboard/out/
+dashboard/node_modules/
+*.log
+.DS_Store
+
+# ── Data (heavy / licensed) ──────────────────────
+data/raw/
+data/raw/**
+# Keep processed subset (small, derivable) — but allow opt-out
+# data/processed/
+
+# ── ML artifacts ─────────────────────────────────
+ml/models/*.pkl
+ml/models/*.joblib
+ml/.cache/
+*.parquet.tmp
+
+# ── IDE / OS ─────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*~
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# ── Auto-generated files ─────────────────────────
+dashboard/lib/types.generated.ts
+ml/__generated__/
+
+# ── Vercel ───────────────────────────────────────
+.vercel/
+
+# ── Test outputs ─────────────────────────────────
+test-results/
+playwright-report/
+playwright/.cache/
+
+# ── Temp ─────────────────────────────────────────
+tmp/
+*.tmp
+test_dl/
+
+# ── Local agent / orchestration state ────────────
+.omc/
+
+# ── Heavy installers accidentally dropped here ───
+*.exe
+Anaconda*-Windows-*.exe
