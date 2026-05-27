@@ -83,11 +83,15 @@ test_dl/
 *.exe
 Anaconda*-Windows-*.exe
 
-# ── Playwright MCP output (design review artifacts, not source) ──
+# ── Playwright MCP output (design / qa review artifacts, not source) ──
 .playwright-mcp/
 desktop-*.png
 mobile-*.png
 tablet-*.png
 *-zoom.png
-after-fixes-*.png
+after-*.png
 before-*.png
+qa-*.png
+
+# ── /qa report output (local, not committed) ──
+.gstack/
