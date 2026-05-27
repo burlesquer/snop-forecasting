@@ -25,7 +25,8 @@ export function TabNav() {
             href={tab.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "relative px-4 py-2 text-sm font-medium transition-colors duration-fast ease-out-expo",
+              // min-h-11 = 44px WCAG AA touch target
+              "relative inline-flex items-center px-4 min-h-11 text-sm font-medium transition-colors duration-fast ease-out-expo",
               active ? "text-text-strong" : "text-muted hover:text-text"
             )}
           >

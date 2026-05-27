@@ -28,12 +28,13 @@ export function Toggle({
       title={title}
       onClick={() => onPressedChange(!pressed)}
       className={cn(
-        "inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium",
+        // min-h-11 = 44px WCAG AA touch target; px-3.5 keeps text comfortable
+        "inline-flex items-center gap-2 px-3.5 min-h-11 rounded-md text-xs font-medium",
         "border transition-all duration-fast ease-out-expo",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1",
         disabled && "opacity-50 cursor-not-allowed",
-        !disabled && pressed && "bg-accent-bg border-accent text-accent-strong",
-        !disabled && !pressed && "bg-surface border-border text-muted hover:text-text hover:border-border-strong"
+        !disabled && pressed && "bg-accent-bg border-accent text-accent-strong shadow-sm",
+        !disabled && !pressed && "bg-surface border-border-strong text-text hover:bg-surface-2 hover:border-text"
       )}
     >
       <span

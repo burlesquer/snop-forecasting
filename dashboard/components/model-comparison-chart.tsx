@@ -29,20 +29,20 @@ export function ModelComparisonChart({ data }: { data: ModelComparisonJSON }) {
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={rows} margin={{ top: 10, right: 8, bottom: 20, left: -10 }}>
             <CartesianGrid stroke="var(--color-border)" strokeDasharray="2 4" vertical={false} />
-            <XAxis dataKey="name" tick={{ fontSize: 11, fill: "var(--color-muted)" }} />
+            <XAxis dataKey="name" tick={{ fontSize: 12, fill: "var(--color-muted)" }} />
             <YAxis
-              tick={{ fontSize: 11, fill: "var(--color-muted)" }}
-              width={40}
+              tick={{ fontSize: 12, fill: "var(--color-muted)" }}
+              width={44}
               label={{
                 value: "WAPE (%)",
                 angle: -90,
                 position: "insideLeft",
-                fontSize: 10,
+                fontSize: 12,
                 fill: "var(--color-muted)",
               }}
             />
             <Tooltip
-              cursor={{ fill: "var(--color-surface-2)" }}
+              cursor={{ fill: "var(--color-accent-bg)", opacity: 0.5 }}
               formatter={(v, name) => {
                 const n = String(name);
                 const val = typeof v === "number" ? v : Number(v);

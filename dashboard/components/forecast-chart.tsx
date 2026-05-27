@@ -48,10 +48,10 @@ export function ForecastChart({ data }: { data: ForecastsJSON }) {
             <CartesianGrid stroke="var(--color-border)" strokeDasharray="2 4" vertical={false} />
             <XAxis
               dataKey="date"
-              tick={{ fontSize: 11, fill: "var(--color-muted)" }}
+              tick={{ fontSize: 12, fill: "var(--color-muted)" }}
               interval={Math.floor(rows.length / 6)}
             />
-            <YAxis tick={{ fontSize: 11, fill: "var(--color-muted)" }} width={40} />
+            <YAxis tick={{ fontSize: 12, fill: "var(--color-muted)" }} width={40} />
             <Tooltip
               cursor={{ stroke: "var(--color-accent)", strokeWidth: 1, strokeDasharray: "3 3" }}
               formatter={(value, name) => [

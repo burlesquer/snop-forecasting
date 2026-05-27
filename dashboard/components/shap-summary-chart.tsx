@@ -30,23 +30,23 @@ export function ShapSummaryChart({ data }: { data: SHAPJSON }) {
             <CartesianGrid stroke="var(--color-border)" strokeDasharray="2 4" horizontal={false} />
             <XAxis
               type="number"
-              tick={{ fontSize: 10, fill: "var(--color-muted)" }}
+              tick={{ fontSize: 12, fill: "var(--color-muted)" }}
               label={{
                 value: "mean |SHAP|",
                 position: "insideBottom",
                 offset: -2,
-                fontSize: 10,
+                fontSize: 12,
                 fill: "var(--color-muted)",
               }}
             />
             <YAxis
               type="category"
               dataKey="name"
-              tick={{ fontSize: 11, fill: "var(--color-text)" }}
-              width={60}
+              tick={{ fontSize: 12, fill: "var(--color-text)" }}
+              width={80}
             />
             <Tooltip
-              cursor={{ fill: "var(--color-surface-2)" }}
+              cursor={{ fill: "var(--color-accent-bg)", opacity: 0.5 }}
               formatter={(v) => [typeof v === "number" ? v : String(v), "mean |SHAP|"]}
             />
             <Bar

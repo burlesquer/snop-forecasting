@@ -172,10 +172,10 @@ export function InventorySimulator({
             <LineChart data={chartData} margin={{ top: 10, right: 8, bottom: 0, left: -10 }}>
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 10, fill: "var(--color-muted)" }}
+                tick={{ fontSize: 12, fill: "var(--color-muted)" }}
                 interval={Math.floor(chartData.length / 5)}
               />
-              <YAxis tick={{ fontSize: 10, fill: "var(--color-muted)" }} width={40} />
+              <YAxis tick={{ fontSize: 12, fill: "var(--color-muted)" }} width={40} />
               <Tooltip
                 formatter={(v) => [typeof v === "number" ? formatInt(v) : String(v), "재고"]}
                 cursor={{ stroke: "var(--color-accent)", strokeWidth: 1, strokeDasharray: "3 3" }}

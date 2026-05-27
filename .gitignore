@@ -80,3 +80,12 @@ test_dl/
 # ── Heavy installers accidentally dropped here ───
 *.exe
 Anaconda*-Windows-*.exe
+
+# ── Playwright MCP output (design review artifacts, not source) ──
+.playwright-mcp/
+desktop-*.png
+mobile-*.png
+tablet-*.png
+*-zoom.png
+after-fixes-*.png
+before-*.png
