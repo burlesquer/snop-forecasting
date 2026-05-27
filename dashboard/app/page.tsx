@@ -32,7 +32,9 @@ export default async function ExecutivePage() {
         <h2 id="kpis-heading" className="sr-only">
           핵심 지표
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        {/* 5 cards laid out without an orphan row across breakpoints:
+            <640: 1 col (5 stacked), 640-1023: 3 col (3+2), 1024+: 5 col */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           <KpiCard kpi={kpis.forecast_accuracy} />
           <KpiCard kpi={kpis.inventory_turnover} />
           <KpiCard kpi={kpis.service_level} />

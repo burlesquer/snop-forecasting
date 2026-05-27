@@ -1,5 +1,7 @@
 # Forecast Studio · S&OP Demo
 
+![Forecast Studio cover](https://snop-forecasting.vercel.app/opengraph-image)
+
 > Interactive S&OP decision support tool using Kaggle M5 Forecasting-Accuracy data.
 > Korean K-beauty scenario reframing. Built as a portfolio piece.
 

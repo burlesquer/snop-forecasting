@@ -1,11 +1,15 @@
 import { cn } from "@/lib/utils";
-import { formatDelta } from "@/lib/format";
 import type { KPI } from "@/lib/types.generated";
 
 /**
  * KPI card for the Executive tab header strip.
+ *
  * Direction maps to a left-edge accent: safe (sage), warn (amber), danger (terracotta).
- * Numbers use tabular-nums so 5 cards align cleanly across the row.
+ * Every card carries a delta_label (e.g., "Naive 대비 ▲11.4%p" or "목표 12회 대비 ▲10.4회")
+ * so the row reads as a row of consistent contextual indicators, not one card with
+ * extra info and four bare numbers.
+ *
+ * Numbers use tabular-nums so the 5 cards align cleanly across the row.
  */
 export function KpiCard({ kpi }: { kpi: KPI }) {
   const directionClass: Record<KPI["direction"], string> = {
@@ -13,12 +17,16 @@ export function KpiCard({ kpi }: { kpi: KPI }) {
     warn: "before:bg-warn",
     bad: "before:bg-danger",
   };
-  const delta = formatDelta(kpi.delta_pp ?? null);
+  const toneClass: Record<NonNullable<KPI["delta_tone"]>, string> = {
+    good: "text-safe",
+    bad: "text-danger",
+    neutral: "text-muted",
+  };
 
   return (
     <div
       className={cn(
-        "relative bg-surface border border-border rounded-xl p-5",
+        "relative bg-surface border border-border rounded-xl p-5 min-h-32 flex flex-col",
         "transition-shadow duration-base ease-out-expo hover:shadow-md",
         // Subtle left accent bar — restrained, not the "colored card border" anti-pattern
         "before:absolute before:left-0 before:top-4 before:bottom-4 before:w-0.5 before:rounded-full",
@@ -31,17 +39,14 @@ export function KpiCard({ kpi }: { kpi: KPI }) {
       <div className="mt-2 text-3xl font-bold text-text-strong font-tabular tracking-tight">
         {kpi.value}
       </div>
-      {delta.text !== "—" && (
+      {kpi.delta_label && (
         <div
           className={cn(
-            "mt-1 text-xs font-medium font-tabular",
-            delta.tone === "good" && "text-safe",
-            delta.tone === "bad" && "text-danger",
-            delta.tone === "neutral" && "text-muted"
+            "mt-auto pt-2 text-xs font-medium font-tabular leading-tight",
+            toneClass[kpi.delta_tone ?? "neutral"]
           )}
         >
-          {delta.text}
-          <span className="text-muted ml-1">vs baseline</span>
+          {kpi.delta_label}
         </div>
       )}
     </div>

@@ -130,10 +130,15 @@ def _build_kpis(
     risk: list[InventoryRow],
     excess: list[InventoryRow],
 ) -> KPIsJSON:
-    """Five executive KPIs derived from model + inventory state."""
+    """Five executive KPIs derived from model + inventory state.
+
+    Each KPI carries an optional `delta_label` that compares to a meaningful
+    reference (baseline model, business target, ideal state). Keeps all five
+    cards visually consistent — every card has a second line of context.
+    """
     lgbm = next(m for m in metrics if m.model == "lightgbm")
     naive = next(m for m in metrics if m.model == "naive")
-    accuracy = max(0.0, 1.0 - lgbm.wape)            # higher is better
+    accuracy = max(0.0, 1.0 - lgbm.wape)
     accuracy_naive = max(0.0, 1.0 - naive.wape)
     accuracy_delta_pp = (accuracy - accuracy_naive) * 100
 
@@ -143,20 +148,36 @@ def _build_kpis(
     risk_count = int(sum(1 for s in signals if s.stockout_probability >= 0.30))
     cash_trapped = estimated_cash_trapped(excess)
 
+    # Business targets — referenced from DESIGN.md / industry rules of thumb
+    TURNOVER_TARGET = 12.0     # 회/년 (월 1회전)
+    SERVICE_TARGET = 95.0      # %
+    RISK_TARGET = 0            # 건
+
+    def _arrow(value: float) -> str:
+        return "▲" if value > 0 else ("▼" if value < 0 else "")
+
     return KPIsJSON(
         forecast_accuracy=KPI(
             label="예측 적중률 (1-WAPE)",
             value=f"{accuracy * 100:.1f}%",
             value_raw=accuracy,
             delta_pp=round(accuracy_delta_pp, 1),
+            delta_label=f"Naive 대비 {_arrow(accuracy_delta_pp)}{abs(accuracy_delta_pp):.1f}%p",
+            delta_tone="good" if accuracy_delta_pp > 0 else "bad",
             unit="pct",
             direction=_direction(accuracy * 100, good=40, bad=25),
         ),
         inventory_turnover=KPI(
-            label="평균 재고회전율 (연환산)",
+            label="평균 재고회전율",
             value=f"{turnover_mean:.1f}회",
             value_raw=turnover_mean,
             delta_pp=None,
+            delta_label=(
+                f"목표 {TURNOVER_TARGET:.0f}회 대비 "
+                f"{_arrow(turnover_mean - TURNOVER_TARGET)}"
+                f"{abs(turnover_mean - TURNOVER_TARGET):.1f}회"
+            ),
+            delta_tone="good" if turnover_mean >= TURNOVER_TARGET else "bad",
             unit="ratio",
             direction=_direction(turnover_mean, good=12, bad=6),
         ),
@@ -165,6 +186,12 @@ def _build_kpis(
             value=f"{service_level * 100:.1f}%",
             value_raw=service_level,
             delta_pp=None,
+            delta_label=(
+                f"목표 {SERVICE_TARGET:.0f}% 대비 "
+                f"{_arrow(service_level * 100 - SERVICE_TARGET)}"
+                f"{abs(service_level * 100 - SERVICE_TARGET):.1f}%p"
+            ),
+            delta_tone="good" if service_level * 100 >= SERVICE_TARGET else "bad",
             unit="pct",
             direction=_direction(service_level * 100, good=90, bad=70),
         ),
@@ -173,6 +200,11 @@ def _build_kpis(
             value=f"{risk_count}건",
             value_raw=float(risk_count),
             delta_pp=None,
+            delta_label=(
+                "이번 주 발주 검토 필요" if risk_count > 0
+                else f"목표 {RISK_TARGET}건 달성"
+            ),
+            delta_tone="bad" if risk_count > 5 else ("neutral" if risk_count > 0 else "good"),
             unit="count",
             direction=_direction(risk_count, good=5, bad=15, lower_is_better=True),
         ),
@@ -181,6 +213,13 @@ def _build_kpis(
             value=f"₩{cash_trapped:,.0f}",
             value_raw=cash_trapped,
             delta_pp=None,
+            delta_label=(
+                "할인/생산조정으로 회수 가능" if cash_trapped > 1_000_000
+                else "건강한 수준"
+            ),
+            delta_tone="bad" if cash_trapped > 5_000_000 else (
+                "neutral" if cash_trapped > 1_000_000 else "good"
+            ),
             unit="won",
             direction=_direction(
                 cash_trapped, good=1_000_000, bad=10_000_000, lower_is_better=True

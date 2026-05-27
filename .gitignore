@@ -58,7 +58,9 @@ ehthumbs.db
 desktop.ini
 
 # ── Auto-generated files ─────────────────────────
-dashboard/lib/types.generated.ts
+# dashboard/lib/types.generated.ts is committed so GitHub-driven Vercel
+# builds work without running Python. Regenerate via:
+#   python -m tools.generate_ts_types
 ml/__generated__/
 
 # ── Vercel ───────────────────────────────────────

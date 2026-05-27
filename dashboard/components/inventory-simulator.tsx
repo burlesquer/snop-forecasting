@@ -33,6 +33,17 @@ export function InventorySimulator({
 
   const [selectedId, setSelectedId] = useState<string>(skuOptions[0]?.forecast.sku.id ?? "");
   const [orderQty, setOrderQty] = useState<number>(0);
+  const [skuFilter, setSkuFilter] = useState<string>("");
+
+  const filteredOptions = useMemo(() => {
+    const q = skuFilter.trim().toLowerCase();
+    if (!q) return skuOptions;
+    return skuOptions.filter(({ forecast }) =>
+      forecast.sku.name.toLowerCase().includes(q) ||
+      forecast.sku.category.toLowerCase().includes(q) ||
+      forecast.sku.id.toLowerCase().includes(q)
+    );
+  }, [skuOptions, skuFilter]);
 
   const selected = useMemo(
     () => skuOptions.find((o) => o.forecast.sku.id === selectedId),
@@ -82,23 +93,41 @@ export function InventorySimulator({
       <div className="space-y-4">
         <div>
           <label className="text-xs text-muted uppercase tracking-wide font-medium">
-            SKU 선택
+            SKU 선택 (총 {skuOptions.length}개)
           </label>
+          <input
+            type="text"
+            placeholder="검색: 토너, 메이크업, FOODS_2..."
+            value={skuFilter}
+            onChange={(e) => setSkuFilter(e.target.value)}
+            className={cn(
+              "mt-1 block w-full rounded-md border border-border bg-surface px-3 min-h-11 text-sm",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1",
+              "placeholder:text-muted transition-colors duration-fast"
+            )}
+          />
           <select
             value={selectedId}
             onChange={(e) => setSelectedId(e.target.value)}
+            size={Math.min(8, Math.max(3, filteredOptions.length))}
             className={cn(
-              "mt-1 block w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm",
+              "mt-2 block w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1",
               "transition-colors duration-fast"
             )}
           >
-            {skuOptions.slice(0, 30).map(({ forecast, signal }) => (
-              <option key={forecast.sku.id} value={forecast.sku.id}>
-                {forecast.sku.name}
-                {signal ? ` · 결품 ${(signal.stockout_probability * 100).toFixed(0)}%` : ""}
-              </option>
-            ))}
+            {filteredOptions.length === 0 ? (
+              <option disabled>검색 결과 없음</option>
+            ) : (
+              filteredOptions.map(({ forecast, signal }) => (
+                <option key={forecast.sku.id} value={forecast.sku.id}>
+                  {forecast.sku.name}
+                  {signal
+                    ? ` · 결품 ${(signal.stockout_probability * 100).toFixed(0)}%`
+                    : ""}
+                </option>
+              ))
+            )}
           </select>
           <p className="mt-1 text-xs text-muted">
             {selected.forecast.sku.category} · 현재고 {formatInt(sim.currentStock)}개

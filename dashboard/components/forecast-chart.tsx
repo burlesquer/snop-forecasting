@@ -13,23 +13,62 @@ import {
 } from "recharts";
 import type { ForecastsJSON, ForecastSeries } from "@/lib/types.generated";
 import { Toggle } from "@/components/ui/toggle";
+import { cn } from "@/lib/utils";
+
+const ALL_CATEGORIES = "전체";
 
 /**
- * Executive chart — aggregated across all SKUs to show total demand trajectory.
+ * Executive chart — total demand trajectory, decomposable by category.
+ *
+ * Category selector defaults to "전체" (all 50 SKUs aggregated). Picking a
+ * specific category aggregates only that category's SKUs so the forecast
+ * shape per category becomes visible.
+ *
  * Recharts Area renders the P10/P90 fan band when 신뢰구간 toggle is on.
  * What-if toggle swaps the P50 line for the promotion=on variant.
  */
 export function ForecastChart({ data }: { data: ForecastsJSON }) {
   const [showConfidence, setShowConfidence] = useState(true);
   const [whatIf, setWhatIf] = useState(false);
+  const [category, setCategory] = useState<string>(ALL_CATEGORIES);
 
-  const rows = useMemo(() => buildAggregated(data.skus), [data]);
+  const categories = useMemo(
+    () => [ALL_CATEGORIES, ...new Set(data.skus.map((s) => s.sku.category))],
+    [data]
+  );
+
+  const filteredSkus = useMemo(() => {
+    if (category === ALL_CATEGORIES) return data.skus;
+    return data.skus.filter((s) => s.sku.category === category);
+  }, [data, category]);
+
+  const rows = useMemo(() => buildAggregated(filteredSkus), [filteredSkus]);
   const lastHistorical = rows.findIndex((r) => r.p50 !== null) - 1;
   const cutoffDate = lastHistorical >= 0 ? rows[lastHistorical].date : undefined;
 
   return (
     <div>
       <div className="flex flex-wrap items-center gap-2 mb-4">
+        <label className="inline-flex items-center gap-2 text-xs text-muted">
+          카테고리
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className={cn(
+              "rounded-md border border-border-strong bg-surface px-2 min-h-11 text-sm",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+            )}
+          >
+            {categories.map((c) => (
+              <option key={c} value={c}>
+                {c}
+                {c !== ALL_CATEGORIES
+                  ? ` (${data.skus.filter((s) => s.sku.category === c).length})`
+                  : ` (${data.skus.length})`}
+              </option>
+            ))}
+          </select>
+        </label>
         <Toggle pressed={showConfidence} onPressedChange={setShowConfidence}>
           신뢰구간 (P10-P90)
         </Toggle>

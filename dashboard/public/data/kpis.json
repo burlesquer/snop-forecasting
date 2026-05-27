@@ -4,14 +4,18 @@
     "value": "36.1%",
     "value_raw": 0.360503336025084,
     "delta_pp": 11.4,
+    "delta_label": "Naive 대비 ▲11.4%p",
+    "delta_tone": "good",
     "unit": "pct",
     "direction": "warn"
   },
   "inventory_turnover": {
-    "label": "평균 재고회전율 (연환산)",
+    "label": "평균 재고회전율",
     "value": "22.4회",
     "value_raw": 22.424429502013968,
     "delta_pp": null,
+    "delta_label": "목표 12회 대비 ▲10.4회",
+    "delta_tone": "good",
     "unit": "ratio",
     "direction": "good"
   },
@@ -20,6 +24,8 @@
     "value": "92.8%",
     "value_raw": 0.9283406453499263,
     "delta_pp": null,
+    "delta_label": "목표 95% 대비 ▼2.2%p",
+    "delta_tone": "bad",
     "unit": "pct",
     "direction": "good"
   },
@@ -28,6 +34,8 @@
     "value": "5건",
     "value_raw": 5.0,
     "delta_pp": null,
+    "delta_label": "이번 주 발주 검토 필요",
+    "delta_tone": "neutral",
     "unit": "count",
     "direction": "good"
   },
@@ -36,6 +44,8 @@
     "value": "₩3,238,083",
     "value_raw": 3238083.4255877696,
     "delta_pp": null,
+    "delta_label": "할인/생산조정으로 회수 가능",
+    "delta_tone": "neutral",
     "unit": "won",
     "direction": "warn"
   }

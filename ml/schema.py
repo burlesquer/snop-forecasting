@@ -70,7 +70,17 @@ class KPI(BaseModel):
     value: str = Field(..., description="Pre-formatted display string (₩, %, etc)")
     value_raw: float = Field(..., description="Raw number for sorting/threshold")
     delta_pp: float | None = Field(
-        None, description="Change vs prior period in percentage points"
+        None, description="Change vs prior period in percentage points (kept for legacy)"
+    )
+    delta_label: str | None = Field(
+        None,
+        description=(
+            "Pre-formatted contextual comparison line shown under the KPI value. "
+            "Each KPI gets one — e.g., 'Naive 대비 ▲11.4%p' or '목표 12회 대비 ▲10.4회'."
+        ),
+    )
+    delta_tone: Literal["good", "bad", "neutral"] = Field(
+        "neutral", description="Color of the delta label text"
     )
     unit: KPIUnit
     direction: Literal["good", "warn", "bad"] = Field(
