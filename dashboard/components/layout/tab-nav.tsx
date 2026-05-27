@@ -31,7 +31,11 @@ export function TabNav() {
             )}
           >
             <span>{tab.label}</span>
-            <span className="ml-1.5 text-xs text-muted">{tab.caption}</span>
+            {/* Korean caption hidden under 640px — keeps header from
+                horizontal-scrolling on 375px viewports */}
+            <span className="hidden sm:inline ml-1.5 text-xs text-muted">
+              {tab.caption}
+            </span>
             {active && (
               <span className="absolute inset-x-3 -bottom-px h-0.5 bg-accent rounded-full" />
             )}
