@@ -1,6 +1,6 @@
 // AUTO-GENERATED from ml/schema.py via tools/generate_ts_types.py
 // Do NOT edit by hand — regenerate with: python -m tools.generate_ts_types
-// Last generated: 2026-05-27T17:42:11
+// Last generated: 2026-05-27T17:58:47
 // Schema drift between Python and TypeScript will fail the build.
 
 export interface KPI {
@@ -107,7 +107,10 @@ export interface InventorySignal {
   forecast_28d_p90: number;
   safety_stock: number;
   reorder_point: number;
+  /** Worst case = max(lead, horizon). Used for badge display. */
   stockout_probability: number;
+  /** Stockout risk during lead time only (orderQty would not help). Used for 'urgent this week' KPI counting + service level. */
+  stockout_probability_lead: number;
   /** None = no stockout in horizon */
   days_until_stockout: number | null;
   recommended_order: number;

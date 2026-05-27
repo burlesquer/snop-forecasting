@@ -143,9 +143,15 @@ def _build_kpis(
     accuracy_delta_pp = (accuracy - accuracy_naive) * 100
 
     turnover_mean = float(np.mean([s.turnover_rate_annual for s in signals]))
-    mean_stockout = float(np.mean([s.stockout_probability for s in signals]))
-    service_level = max(0.0, 1.0 - mean_stockout)
-    risk_count = int(sum(1 for s in signals if s.stockout_probability >= 0.30))
+    # Service level + risk count use LEAD-TIME stockout (urgent / this-week meaning).
+    # The horizon-based probability is shown on the simulator gauge — different KPI.
+    mean_stockout_lead = float(
+        np.mean([s.stockout_probability_lead for s in signals])
+    )
+    service_level = max(0.0, 1.0 - mean_stockout_lead)
+    risk_count = int(
+        sum(1 for s in signals if s.stockout_probability_lead >= 0.30)
+    )
     cash_trapped = estimated_cash_trapped(excess)
 
     # Business targets — referenced from DESIGN.md / industry rules of thumb
@@ -337,6 +343,7 @@ def _to_inventory_signal(row: InventoryRow, sku_meta: dict[str, SKUMeta]) -> Inv
         safety_stock=round(row.safety_stock, 2),
         reorder_point=round(row.reorder_point, 2),
         stockout_probability=round(row.stockout_probability, 4),
+        stockout_probability_lead=round(row.stockout_probability_lead, 4),
         days_until_stockout=row.days_until_stockout,
         recommended_order=row.recommended_order,
         turnover_rate_annual=round(row.turnover_rate_annual, 2),

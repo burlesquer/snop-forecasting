@@ -13,6 +13,7 @@
       "safety_stock": 14.5,
       "reorder_point": 15.02,
       "stockout_probability": 0.8048,
+      "stockout_probability_lead": 0.0,
       "days_until_stockout": 12,
       "recommended_order": 0,
       "turnover_rate_annual": 74.47
@@ -30,6 +31,7 @@
       "safety_stock": 29.51,
       "reorder_point": 81.18,
       "stockout_probability": 0.7952,
+      "stockout_probability_lead": 0.3628,
       "days_until_stockout": 9,
       "recommended_order": 19,
       "turnover_rate_annual": 45.44
@@ -47,6 +49,7 @@
       "safety_stock": 34.45,
       "reorder_point": 93.75,
       "stockout_probability": 0.7948,
+      "stockout_probability_lead": 0.4102,
       "days_until_stockout": 9,
       "recommended_order": 26,
       "turnover_rate_annual": 48.01
@@ -64,6 +67,7 @@
       "safety_stock": 31.62,
       "reorder_point": 98.03,
       "stockout_probability": 0.7824,
+      "stockout_probability_lead": 0.0106,
       "days_until_stockout": 13,
       "recommended_order": 0,
       "turnover_rate_annual": 28.14
@@ -81,6 +85,7 @@
       "safety_stock": 22.66,
       "reorder_point": 61.39,
       "stockout_probability": 0.7818,
+      "stockout_probability_lead": 0.1389,
       "days_until_stockout": 12,
       "recommended_order": 0,
       "turnover_rate_annual": 35.79
@@ -100,6 +105,7 @@
       "safety_stock": 19.92,
       "reorder_point": 54.44,
       "stockout_probability": 0.3297,
+      "stockout_probability_lead": 0.0,
       "days_until_stockout": null,
       "recommended_order": 0,
       "turnover_rate_annual": 9.5
@@ -117,6 +123,7 @@
       "safety_stock": 26.05,
       "reorder_point": 84.62,
       "stockout_probability": 0.3104,
+      "stockout_probability_lead": 0.0,
       "days_until_stockout": null,
       "recommended_order": 0,
       "turnover_rate_annual": 9.75
@@ -134,6 +141,7 @@
       "safety_stock": 26.31,
       "reorder_point": 83.29,
       "stockout_probability": 0.3274,
+      "stockout_probability_lead": 0.0,
       "days_until_stockout": null,
       "recommended_order": 0,
       "turnover_rate_annual": 9.98
@@ -151,6 +159,7 @@
       "safety_stock": 14.5,
       "reorder_point": 15.02,
       "stockout_probability": 0.3825,
+      "stockout_probability_lead": 0.0,
       "days_until_stockout": null,
       "recommended_order": 0,
       "turnover_rate_annual": 10.13
@@ -168,6 +177,7 @@
       "safety_stock": 14.5,
       "reorder_point": 15.02,
       "stockout_probability": 0.3866,
+      "stockout_probability_lead": 0.0,
       "days_until_stockout": null,
       "recommended_order": 0,
       "turnover_rate_annual": 10.21

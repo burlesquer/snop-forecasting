@@ -52,7 +52,13 @@ class InventoryRow:
     forecast_28d_p90: float
     safety_stock: float
     reorder_point: float
-    stockout_probability: float
+    # Two probabilities — semantically distinct, computed separately:
+    #   _lead     = P(stockout during lead time, before any reorder arrives)
+    #               → drives "this week's urgent SKUs" + service level KPIs
+    #   _horizon  = P(stockout in 28d given current_stock + recommended_order)
+    #               → matches the interactive simulator's gauge baseline
+    stockout_probability_lead: float
+    stockout_probability: float  # horizon — kept this name to match schema
     days_until_stockout: int | None
     recommended_order: int
     turnover_rate_annual: float
@@ -115,11 +121,14 @@ def stockout_probability(
     else:
         prob_horizon = 1.0 - _normal_cdf((total_stock - horizon_p50) / sigma_horizon)
 
+    prob_lead = max(0.0, min(1.0, prob_lead))
+    prob_horizon = max(0.0, min(1.0, prob_horizon))
     prob = max(prob_lead, prob_horizon)
-    prob = max(0.0, min(1.0, prob))
 
     return {
-        "stockout_probability": prob,
+        "stockout_probability": prob,           # max(lead, horizon)
+        "stockout_probability_lead": prob_lead, # exposed separately for KPIs
+        "stockout_probability_horizon": prob_horizon,
         "days_until_stockout": days_until,
         "projected_inventory": inventory.tolist(),
     }
@@ -192,6 +201,7 @@ def compute_signals(predictions: pd.DataFrame) -> list[InventoryRow]:
                 forecast_28d_p90=p90_28d,
                 safety_stock=ss,
                 reorder_point=rop,
+                stockout_probability_lead=float(sim["stockout_probability_lead"]),
                 stockout_probability=float(sim["stockout_probability"]),
                 days_until_stockout=sim["days_until_stockout"],  # int | None
                 recommended_order=rec,

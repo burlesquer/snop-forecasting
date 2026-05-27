@@ -124,7 +124,17 @@ class InventorySignal(BaseModel):
     )
     safety_stock: float
     reorder_point: float
-    stockout_probability: float = Field(..., ge=0.0, le=1.0)
+    stockout_probability: float = Field(
+        ..., ge=0.0, le=1.0,
+        description="Worst case = max(lead, horizon). Used for badge display.",
+    )
+    stockout_probability_lead: float = Field(
+        ..., ge=0.0, le=1.0,
+        description=(
+            "Stockout risk during lead time only (orderQty would not help)."
+            " Used for 'urgent this week' KPI counting + service level."
+        ),
+    )
     days_until_stockout: int | None = Field(
         None, description="None = no stockout in horizon"
     )
