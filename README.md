@@ -3,7 +3,14 @@
 > Interactive S&OP decision support tool using Kaggle M5 Forecasting-Accuracy data.
 > Korean K-beauty scenario reframing. Built as a portfolio piece.
 
-**Live demo**: _coming soon (Vercel deploy)_
+**🚀 Live demo**: **<https://snop-forecasting.vercel.app>**
+
+| Tab | What's there |
+|-----|--------------|
+| [`/`](https://snop-forecasting.vercel.app) (Executive) | 5 KPIs · 결품/과잉 위험 Top 5 · 신뢰구간 + What-if 토글 · **인터랙티브 재고 시뮬레이터** |
+| [`/analyst`](https://snop-forecasting.vercel.app/analyst) (Analyst) | Naive vs MA vs LightGBM 비교 · 시계열 + P10/P90 fan band · **SHAP feature 설명** |
+
+5-분 시연 동선: 랜딩 KPI → 위험 SKU 보기 → 신뢰구간 토글 → What-if 토글 → 시뮬레이터로 발주 시뮬레이션 → Analyst 탭 → SHAP 클릭으로 모델 의사결정 분해.
 
 ---
 
