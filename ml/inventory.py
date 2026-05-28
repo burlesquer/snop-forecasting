@@ -185,8 +185,12 @@ def compute_signals(predictions: pd.DataFrame) -> list[InventoryRow]:
             p90_daily=p90,
         )
 
-        # Recommended order: bring inventory back up to ROP if below
-        rec = max(0, int(math.ceil(rop - current_stock)))
+        # Recommended order — cover full 28-day horizon demand + safety stock.
+        # Previously used (ROP - current_stock) which ignores horizon stockout:
+        # a SKU could have 80% horizon-stockout risk but ROP-rec = 0 because
+        # current stock happened to exceed the lead-time reorder point.
+        target_inventory = demand_28d + ss
+        rec = max(0, int(math.ceil(target_inventory - current_stock)))
 
         # Turnover (annual) = 365 / days_of_supply, days_of_supply = stock / daily_demand
         daily_demand = max(1e-6, demand_28d / HORIZON_DAYS)

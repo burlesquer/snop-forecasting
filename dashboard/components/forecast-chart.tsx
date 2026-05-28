@@ -93,10 +93,20 @@ export function ForecastChart({ data }: { data: ForecastsJSON }) {
             <YAxis tick={{ fontSize: 12, fill: "var(--color-muted)" }} width={40} />
             <Tooltip
               cursor={{ stroke: "var(--color-accent)", strokeWidth: 1, strokeDasharray: "3 3" }}
-              formatter={(value, name) => [
-                typeof value === "number" ? value.toFixed(1) : "—",
-                NAME_LABELS[String(name)] ?? String(name),
-              ]}
+              formatter={(value, name) => {
+                const label = NAME_LABELS[String(name)] ?? String(name);
+                // Recharts Area passes [lower, upper] for band — format as range
+                if (Array.isArray(value) && value.length === 2) {
+                  const [lo, hi] = value as [number, number];
+                  if (typeof lo === "number" && typeof hi === "number") {
+                    return [`${lo.toFixed(1)} ~ ${hi.toFixed(1)}`, label];
+                  }
+                }
+                if (typeof value === "number") {
+                  return [value.toFixed(1), label];
+                }
+                return ["—", label];
+              }}
             />
             {/* Historical line */}
             <Line
