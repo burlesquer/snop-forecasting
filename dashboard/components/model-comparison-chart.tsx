@@ -29,7 +29,15 @@ export function ModelComparisonChart({ data }: { data: ModelComparisonJSON }) {
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={rows} margin={{ top: 10, right: 8, bottom: 20, left: -10 }}>
             <CartesianGrid stroke="var(--color-border)" strokeDasharray="2 4" vertical={false} />
-            <XAxis dataKey="name" tick={{ fontSize: 12, fill: "var(--color-muted)" }} />
+            <XAxis
+              dataKey="name"
+              tick={{ fontSize: 11, fill: "var(--color-muted)" }}
+              interval={0}
+              angle={-12}
+              textAnchor="end"
+              tickMargin={8}
+              height={64}
+            />
             <YAxis
               tick={{ fontSize: 12, fill: "var(--color-muted)" }}
               width={44}
