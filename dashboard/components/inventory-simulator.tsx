@@ -108,9 +108,9 @@ export function InventorySimulator({
   const lastDate = sim.futureDates[sim.futureDates.length - 1];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {/* Controls */}
-      <div className="space-y-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+      {/* LEFT — Inputs (controls only) */}
+      <div className="flex flex-col gap-4">
         <div>
           <label className="text-xs text-muted uppercase tracking-wide font-medium">
             SKU 선택 (총 {skuOptions.length}개)
@@ -129,7 +129,7 @@ export function InventorySimulator({
           <select
             value={selectedId}
             onChange={(e) => setSelectedId(e.target.value)}
-            size={Math.min(8, Math.max(3, filteredOptions.length))}
+            size={Math.min(5, Math.max(3, filteredOptions.length))}
             className={cn(
               "mt-2 block w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1",
@@ -174,7 +174,10 @@ export function InventorySimulator({
             7일 후 입고되는 발주량 시뮬레이션
           </p>
         </div>
+      </div>
 
+      {/* RIGHT — Outputs (gauge + chart, stacked, equal-styled cards) */}
+      <div className="flex flex-col gap-4">
         {/* Stockout gauge */}
         <div className="rounded-lg bg-surface-2 border border-border p-4">
           <div className="text-xs text-muted uppercase tracking-wide font-medium mb-1">
@@ -207,14 +210,13 @@ export function InventorySimulator({
             />
           </div>
         </div>
-      </div>
 
-      {/* Projected inventory chart */}
-      <div>
-        <div className="text-xs text-muted uppercase tracking-wide font-medium mb-2">
-          향후 4주 재고 추이
-        </div>
-        <div className="h-64">
+        {/* Projected inventory chart — same container treatment as gauge */}
+        <div className="rounded-lg bg-surface-2 border border-border p-4 flex-1 flex flex-col">
+          <div className="text-xs text-muted uppercase tracking-wide font-medium mb-2">
+            향후 4주 재고 추이
+          </div>
+          <div className="flex-1 min-h-[220px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 10, right: 12, bottom: 0, left: -10 }}>
               <XAxis
@@ -282,6 +284,7 @@ export function InventorySimulator({
               />
             </LineChart>
           </ResponsiveContainer>
+        </div>
         </div>
       </div>
     </div>
