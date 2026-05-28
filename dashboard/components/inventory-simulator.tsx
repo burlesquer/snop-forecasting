@@ -1,6 +1,15 @@
 "use client";
 import { useMemo, useState } from "react";
-import { Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import {
+  Line,
+  LineChart,
+  ReferenceArea,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { simulateStockout } from "@/lib/inventory-simulator";
 import { cn } from "@/lib/utils";
 import { formatPct, formatInt } from "@/lib/format";
@@ -82,10 +91,21 @@ export function InventorySimulator({
   const prob = sim.result.stockoutProbability;
   const tone = prob >= 0.5 ? "danger" : prob >= 0.2 ? "warn" : "safe";
 
+  // Clamp inventory at 0 for visualization — real inventory can't go negative.
+  // Keep the raw value in the tooltip so an analyst can still read the shortfall.
   const chartData = sim.result.projectedInventory.map((v, i) => ({
     date: sim.futureDates[i] ?? `+${i + 1}d`,
-    inventory: Math.round(v),
+    inventory: Math.max(0, Math.round(v)),
+    rawInventory: Math.round(v),
   }));
+  const stockoutDayIdx = sim.result.daysUntilStockout
+    ? sim.result.daysUntilStockout - 1
+    : null;
+  const stockoutDate =
+    stockoutDayIdx !== null && stockoutDayIdx < sim.futureDates.length
+      ? sim.futureDates[stockoutDayIdx]
+      : null;
+  const lastDate = sim.futureDates[sim.futureDates.length - 1];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -97,7 +117,7 @@ export function InventorySimulator({
           </label>
           <input
             type="text"
-            placeholder="검색: 토너, 메이크업, FOODS_2..."
+            placeholder="검색: 토너, 립스틱, 향수..."
             value={skuFilter}
             onChange={(e) => setSkuFilter(e.target.value)}
             className={cn(
@@ -136,7 +156,7 @@ export function InventorySimulator({
 
         <div>
           <label className="text-xs text-muted uppercase tracking-wide font-medium">
-            발주량 (단위)
+            발주 수량
           </label>
           <input
             type="number"
@@ -173,17 +193,15 @@ export function InventorySimulator({
           <div className="text-xs text-muted mt-1">
             소진 예상: {sim.result.daysUntilStockout !== null ? `${sim.result.daysUntilStockout}일 후` : "28일 내 없음"}
           </div>
-          <div
-            className={cn(
-              "mt-2 h-1.5 w-full rounded-full overflow-hidden bg-border/50"
-            )}
-          >
+          {/* Slim 4px indicator — 80% headline 숫자가 이미 강력해서 progress
+              bar는 보조적으로만. Full-width red ribbon은 panic 톤이라 회피. */}
+          <div className="mt-3 h-1 w-full rounded-full overflow-hidden bg-border/60">
             <div
               className={cn(
                 "h-full rounded-full transition-all duration-base ease-out-expo",
-                tone === "danger" && "bg-danger",
-                tone === "warn" && "bg-warn",
-                tone === "safe" && "bg-safe"
+                tone === "danger" && "bg-danger/80",
+                tone === "warn" && "bg-warn/80",
+                tone === "safe" && "bg-safe/80"
               )}
               style={{ width: `${Math.round(prob * 100)}%` }}
             />
@@ -198,24 +216,61 @@ export function InventorySimulator({
         </div>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 10, right: 8, bottom: 0, left: -10 }}>
+            <LineChart data={chartData} margin={{ top: 10, right: 12, bottom: 0, left: -10 }}>
               <XAxis
                 dataKey="date"
                 tick={{ fontSize: 12, fill: "var(--color-muted)" }}
                 interval={Math.floor(chartData.length / 5)}
               />
-              <YAxis tick={{ fontSize: 12, fill: "var(--color-muted)" }} width={40} />
+              {/* Cap Y at 0 — real inventory can't dive into negatives.
+                  After stockout day, the line plateaus at 0 and the zone
+                  is shaded to communicate "you ran out". */}
+              <YAxis
+                tick={{ fontSize: 12, fill: "var(--color-muted)" }}
+                width={40}
+                domain={[0, "auto"]}
+                allowDataOverflow={false}
+              />
               <Tooltip
-                formatter={(v) => [typeof v === "number" ? formatInt(v) : String(v), "재고"]}
+                formatter={(v, _name, payload) => {
+                  const raw = (payload?.payload as { rawInventory?: number } | undefined)
+                    ?.rawInventory;
+                  if (typeof v === "number") {
+                    if (v === 0 && typeof raw === "number" && raw < 0) {
+                      return [`0 (예상 부족 ${formatInt(Math.abs(raw))}개)`, "재고"];
+                    }
+                    return [formatInt(v), "재고"];
+                  }
+                  return [String(v), "재고"];
+                }}
                 cursor={{ stroke: "var(--color-accent)", strokeWidth: 1, strokeDasharray: "3 3" }}
               />
-              <ReferenceLine
-                y={0}
-                stroke="var(--color-danger)"
-                strokeWidth={1.5}
-                strokeDasharray="4 3"
-                label={{ value: "결품선", position: "right", fontSize: 10, fill: "var(--color-danger)" }}
-              />
+              {/* Shaded "결품 zone" after the stockout day */}
+              {stockoutDate && lastDate && (
+                <ReferenceArea
+                  x1={stockoutDate}
+                  x2={lastDate}
+                  fill="var(--color-danger)"
+                  fillOpacity={0.06}
+                  ifOverflow="visible"
+                />
+              )}
+              {/* Vertical line marking the exact stockout day */}
+              {stockoutDate && (
+                <ReferenceLine
+                  x={stockoutDate}
+                  stroke="var(--color-danger)"
+                  strokeWidth={1.5}
+                  strokeDasharray="4 3"
+                  label={{
+                    value: `결품 D-${sim.result.daysUntilStockout}일`,
+                    position: "insideTopRight",
+                    fontSize: 11,
+                    fill: "var(--color-danger)",
+                    offset: 6,
+                  }}
+                />
+              )}
               <Line
                 type="monotone"
                 dataKey="inventory"
