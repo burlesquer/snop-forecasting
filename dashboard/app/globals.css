@@ -89,6 +89,38 @@
     outline-offset: 2px;
     border-radius: var(--radius-sm);
   }
+
+  /* ──────────────────────────────────────────────────────────
+     Modern scrollbar — slim, brand-toned, fades in on hover.
+     Cross-browser: scrollbar-width (Firefox) + ::-webkit-* (Chrome/Safari/Edge).
+     Applies to page scroll, multi-line <select>, any overflow container.
+     ────────────────────────────────────────────────────────── */
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-strong) transparent;
+    scrollbar-gutter: stable;
+  }
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: var(--color-border-strong);
+    border-radius: 999px;
+    transition: background var(--dur-fast) var(--ease-out-expo);
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: var(--color-muted);
+  }
+  *::-webkit-scrollbar-thumb:active {
+    background: var(--color-text);
+  }
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
 }
 
 /* ────────────────────────────────────────────────────────────
