@@ -1,0 +1,37 @@
+# Only the dashboard/ folder needs to ship to Vercel.
+# Everything else (ML pipeline, raw M5 data, model artifacts, tools, tests,
+# planning docs) stays out of the upload — they would blow past the 100MB
+# limit and aren't needed by the Next.js app at runtime.
+
+ml/
+tools/
+tests/
+data/
+models/
+.venv/
+venv/
+.kaggle/
+.omc/
+.gstack/
+.claude/
+.cursor/
+.idea/
+.vscode/
+
+# Project planning docs — written for humans, not the live site
+CEO_PLAN.md
+DESIGN.md
+TEST_PLAN.md
+TODOS.md
+*.md
+!dashboard/**/*.md
+
+# Loose dev screenshots
+/*.png
+/*.gif
+
+# Cache + caches
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
