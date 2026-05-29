@@ -1,0 +1,276 @@
+{
+  "sku": {
+    "id": "FOODS_1_110",
+    "name": "모이스트 글로우 토너 30ml (#110)",
+    "category": "스킨케어",
+    "category_raw": "FOODS_1"
+  },
+  "train_end_date": "2016-04-24",
+  "prediction_start_date": "2016-04-25",
+  "raw_sample": {
+    "description": "원천 데이터 — M5 일별 매출 + 가격 + 프로모션 + SNAP + 이벤트",
+    "columns": [
+      "date",
+      "sales",
+      "sell_price",
+      "promotion",
+      "snap",
+      "event"
+    ],
+    "rows": [
+      [
+        "2016-04-11",
+        0,
+        1.96,
+        0,
+        0,
+        null
+      ],
+      [
+        "2016-04-12",
+        0,
+        1.96,
+        0,
+        0,
+        null
+      ],
+      [
+        "2016-04-13",
+        0,
+        1.96,
+        0,
+        0,
+        null
+      ],
+      [
+        "2016-04-14",
+        0,
+        1.96,
+        0,
+        0,
+        null
+      ],
+      [
+        "2016-04-15",
+        0,
+        1.96,
+        0,
+        0,
+        null
+      ],
+      [
+        "2016-04-16",
+        0,
+        1.96,
+        0,
+        0,
+        null
+      ],
+      [
+        "2016-04-17",
+        0,
+        1.96,
+        0,
+        0,
+        null
+      ],
+      [
+        "2016-04-18",
+        0,
+        1.96,
+        0,
+        0,
+        null
+      ],
+      [
+        "2016-04-19",
+        0,
+        1.96,
+        0,
+        0,
+        null
+      ],
+      [
+        "2016-04-20",
+        0,
+        1.96,
+        0,
+        0,
+        null
+      ],
+      [
+        "2016-04-21",
+        0,
+        1.96,
+        0,
+        0,
+        null
+      ],
+      [
+        "2016-04-22",
+        0,
+        1.96,
+        0,
+        0,
+        null
+      ],
+      [
+        "2016-04-23",
+        0,
+        1.96,
+        0,
+        0,
+        null
+      ],
+      [
+        "2016-04-24",
+        0,
+        1.96,
+        0,
+        0,
+        null
+      ]
+    ]
+  },
+  "features": {
+    "description": "학습 끝 시점 (2016-04-24)에서 추출한 feature snapshot — 이 값들로 LightGBM이 다음 28일을 예측",
+    "items": [
+      {
+        "name": "lag7",
+        "description": "7일 전 실적 (요일 효과 포착)",
+        "value": 0.0
+      },
+      {
+        "name": "lag14",
+        "description": "14일 전 실적",
+        "value": 0.0
+      },
+      {
+        "name": "lag28",
+        "description": "28일 전 실적 (4주 주기성)",
+        "value": 0.0
+      },
+      {
+        "name": "rolling_mean_7",
+        "description": "최근 7일 평균",
+        "value": 0.0
+      },
+      {
+        "name": "rolling_mean_28",
+        "description": "최근 28일 평균 (수요 레벨)",
+        "value": 0.0
+      },
+      {
+        "name": "rolling_std_7",
+        "description": "최근 7일 표준편차 (최근 변동성)",
+        "value": 0.0
+      },
+      {
+        "name": "wday",
+        "description": "요일 (월요일)",
+        "value": 0
+      },
+      {
+        "name": "month",
+        "description": "월 (4월)",
+        "value": 4
+      }
+    ]
+  },
+  "prediction": {
+    "description": "LightGBM 3-모델 inference 결과 (예측 시작일: 2016-04-25)",
+    "day1": {
+      "date": "2016-04-25",
+      "p10": 0.0,
+      "p50": 0.0,
+      "p90": 0.22
+    },
+    "horizon_total": {
+      "p10": 0.0,
+      "p50": 97.1,
+      "p90": 239.1
+    }
+  },
+  "inventory_math": [
+    {
+      "step": 1,
+      "label": "28일 총 수요 추정",
+      "expression": "demand_28d = Σ P50[0:28]",
+      "value": 97.1,
+      "unit": "units"
+    },
+    {
+      "step": 2,
+      "label": "Lead-time(7일) 평균 수요",
+      "expression": "μ_lead = Σ P50[0:7]",
+      "value": 0.5,
+      "unit": "units"
+    },
+    {
+      "step": 3,
+      "label": "Lead-time σ (P90-P10 spread에서 역산)",
+      "expression": "σ_lead = (Σ P90[0:7] − Σ P10[0:7]) / 2.5631 = (2.9 − 0.0) / 2.5631",
+      "value": 1.13,
+      "unit": "units"
+    },
+    {
+      "step": 4,
+      "label": "안전재고 (Z=1.6449, 95% 서비스)",
+      "expression": "SS = Z × σ_daily × √L = 1.6449 × 3.33 × √7",
+      "value": 14.5,
+      "unit": "units"
+    },
+    {
+      "step": 5,
+      "label": "현재고 (해시 합성치)",
+      "expression": "round(daily_demand × stock_days_hash)",
+      "value": 17,
+      "unit": "units"
+    },
+    {
+      "step": 6,
+      "label": "Lead-time 결품 확률",
+      "expression": "P_lead = 1 − Φ((17 − 0.5) / 1.13) = 1 − Φ(14.53)",
+      "value": 0.0,
+      "unit": "probability"
+    },
+    {
+      "step": 7,
+      "label": "28일 horizon 결품 확률 (무발주)",
+      "expression": "P_horizon = 1 − Φ((17 − 97.1) / 93.27) = 1 − Φ(-0.86)",
+      "value": 0.805,
+      "unit": "probability"
+    },
+    {
+      "step": 8,
+      "label": "최종 결품 확률 (worst case)",
+      "expression": "P_stockout = max(P_lead, P_horizon) = max(0.0, 0.805)",
+      "value": 0.805,
+      "unit": "probability"
+    },
+    {
+      "step": 9,
+      "label": "권장 발주",
+      "expression": "rec = max(0, ⌈demand_28d + SS − stock⌉) = ⌈97.1 + 14.5 − 17⌉",
+      "value": 95,
+      "unit": "units"
+    },
+    {
+      "step": 10,
+      "label": "예상 매출 손실 (이 SKU만)",
+      "expression": "P_stockout × demand_28d × ₩12,000",
+      "value": 937906.0,
+      "unit": "KRW"
+    }
+  ],
+  "ledger_check": {
+    "description": "위 계산이 inventory_signals.json에 저장된 값과 일치하는지 검증. 수치가 일치한다면 backend(Python)와 worked example이 같은 공식을 적용하고 있다는 증거.",
+    "computed_stockout_probability": 0.805,
+    "stored_stockout_probability": 0.805,
+    "computed_recommended_order": 95,
+    "stored_recommended_order": 95,
+    "computed_safety_stock": 14.5,
+    "stored_safety_stock": 14.5,
+    "match": true
+  }
+}

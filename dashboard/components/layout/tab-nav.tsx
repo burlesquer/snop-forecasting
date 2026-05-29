@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 const TABS = [
   { href: "/", label: "Executive", caption: "경영자" },
   { href: "/analyst", label: "Analyst", caption: "분석가" },
+  { href: "/methodology", label: "Methodology", caption: "방법론" },
 ] as const;
 
 /**

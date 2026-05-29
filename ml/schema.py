@@ -34,15 +34,25 @@ class SKUMeta(BaseModel):
 class ForecastSeries(BaseModel):
     """One SKU's history + 28-day forecast across quantiles and scenarios.
 
-    Array length convention:
-        - historical: only past values (length = historical_days)
-        - pXX:        only future values (length = horizon_days)
-        - dates:      historical_days + horizon_days (the union)
+    Array length convention (all length = historical_days + horizon_days):
+        - historical:     non-null for the train (past) period only
+        - actual_holdout: non-null for the test (holdout) period only
+                          — what really happened during the forecast window;
+                          enables visual "예측 vs 실제" backtest verification
+        - pXX:            non-null for the test (holdout) period only
+        - dates:          full date union (length = historical_days + horizon_days)
+
+    `historical` ∪ `actual_holdout` covers every date with a non-null actual.
+    They are kept separate to make the train/test boundary explicit.
     """
 
     sku: SKUMeta
     dates: list[str] = Field(..., description="ISO yyyy-mm-dd")
     historical: list[float | None]
+    actual_holdout: list[float | None] = Field(
+        default_factory=list,
+        description="Real demand during the holdout window (the model did not see this).",
+    )
     p10: list[float | None] = Field(..., description="Quantile 0.1")
     p50: list[float | None] = Field(..., description="Quantile 0.5 (point)")
     p90: list[float | None] = Field(..., description="Quantile 0.9")

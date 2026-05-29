@@ -1,6 +1,6 @@
 // AUTO-GENERATED from ml/schema.py via tools/generate_ts_types.py
 // Do NOT edit by hand — regenerate with: python -m tools.generate_ts_types
-// Last generated: 2026-05-27T17:58:47
+// Last generated: 2026-05-28T16:56:02
 // Schema drift between Python and TypeScript will fail the build.
 
 export interface KPI {
@@ -79,6 +79,8 @@ export interface ForecastSeries {
   /** ISO yyyy-mm-dd */
   dates: string[];
   historical: (number | null)[];
+  /** Real demand during the holdout window (the model did not see this). */
+  actual_holdout: (number | null)[];
   /** Quantile 0.1 */
   p10: (number | null)[];
   /** Quantile 0.5 (point) */

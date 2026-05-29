@@ -90,7 +90,17 @@ export function ForecastChart({ data }: { data: ForecastsJSON }) {
               tick={{ fontSize: 12, fill: "var(--color-muted)" }}
               interval={Math.floor(rows.length / 6)}
             />
-            <YAxis tick={{ fontSize: 12, fill: "var(--color-muted)" }} width={40} />
+            <YAxis
+              tick={{ fontSize: 12, fill: "var(--color-muted)" }}
+              width={56}
+              label={{
+                value: "일별 수요 (units)",
+                angle: -90,
+                position: "insideLeft",
+                offset: 12,
+                style: { fontSize: 11, fill: "var(--color-muted)", textAnchor: "middle" },
+              }}
+            />
             <Tooltip
               cursor={{ stroke: "var(--color-accent)", strokeWidth: 1, strokeDasharray: "3 3" }}
               formatter={(value, name) => {

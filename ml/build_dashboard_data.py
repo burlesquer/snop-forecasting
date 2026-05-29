@@ -159,6 +159,16 @@ def _build_kpis(
     SERVICE_TARGET = 95.0      # %
     RISK_TARGET = 0            # 건
 
+    # Tone thresholds — single source of truth for risk_count + cash_trapped grading.
+    # Keep these aligned with the `good`/`bad` args to _direction() below; if you
+    # change one, change both.
+    RISK_BAD_OVER = 5           # > 5 risk SKUs → "bad" tone
+    RISK_DIRECTION_GOOD = 5     # ≤ 5 → "good" tint on direction
+    RISK_DIRECTION_BAD = 15     # ≥ 15 → "bad" tint on direction
+    CASH_HEALTHY_MAX = 1_000_000     # ≤ this → "건강한 수준"
+    CASH_BAD_OVER = 5_000_000        # > this → "bad" tone
+    CASH_DIRECTION_BAD = 10_000_000  # ≥ this → "bad" tint on direction
+
     def _arrow(value: float) -> str:
         return "▲" if value > 0 else ("▼" if value < 0 else "")
 
@@ -210,9 +220,17 @@ def _build_kpis(
                 "이번 주 발주 검토 필요" if risk_count > 0
                 else f"목표 {RISK_TARGET}건 달성"
             ),
-            delta_tone="bad" if risk_count > 5 else ("neutral" if risk_count > 0 else "good"),
+            delta_tone=(
+                "bad" if risk_count > RISK_BAD_OVER
+                else ("neutral" if risk_count > 0 else "good")
+            ),
             unit="count",
-            direction=_direction(risk_count, good=5, bad=15, lower_is_better=True),
+            direction=_direction(
+                risk_count,
+                good=RISK_DIRECTION_GOOD,
+                bad=RISK_DIRECTION_BAD,
+                lower_is_better=True,
+            ),
         ),
         cash_trapped=KPI(
             label="과잉재고 묶인 현금",
@@ -220,15 +238,19 @@ def _build_kpis(
             value_raw=cash_trapped,
             delta_pp=None,
             delta_label=(
-                "할인/생산조정으로 회수 가능" if cash_trapped > 1_000_000
+                "할인/생산조정으로 회수 가능" if cash_trapped > CASH_HEALTHY_MAX
                 else "건강한 수준"
             ),
-            delta_tone="bad" if cash_trapped > 5_000_000 else (
-                "neutral" if cash_trapped > 1_000_000 else "good"
+            delta_tone=(
+                "bad" if cash_trapped > CASH_BAD_OVER
+                else ("neutral" if cash_trapped > CASH_HEALTHY_MAX else "good")
             ),
             unit="won",
             direction=_direction(
-                cash_trapped, good=1_000_000, bad=10_000_000, lower_is_better=True
+                cash_trapped,
+                good=CASH_HEALTHY_MAX,
+                bad=CASH_DIRECTION_BAD,
+                lower_is_better=True,
             ),
         ),
     )
@@ -251,6 +273,10 @@ def _build_forecasts(
     recent_cutoff = train["ds"].max() - pd.Timedelta(days=historical_days - 1)
     recent = train[train["ds"] >= recent_cutoff][["unique_id", "ds", "y"]]
 
+    # Holdout actuals — values the model didn't see, used for backtest viz.
+    # Same SKU × date keying as predictions so they align 1:1.
+    test_y = test[["unique_id", "ds", "y"]]
+
     # Quantile predictions: pivot to wide for cleaner per-day fetching
     quant = predictions[predictions["model"].isin(["lightgbm_p10", "lightgbm", "lightgbm_p90"])]
     wide_q = quant.pivot_table(
@@ -264,6 +290,7 @@ def _build_forecasts(
         q_group = wide_q[wide_q["unique_id"] == sku].sort_values("ds")
         no_promo_group = p50_no_promo[p50_no_promo["unique_id"] == sku].sort_values("ds")
         with_promo_group = p50_with_promo[p50_with_promo["unique_id"] == sku].sort_values("ds")
+        test_group = test_y[test_y["unique_id"] == sku].sort_values("ds")
 
         # Date union: historical dates + forecast dates
         all_dates = pd.concat([hist_group["ds"], q_group["ds"]]).drop_duplicates().sort_values()
@@ -271,6 +298,7 @@ def _build_forecasts(
 
         # Vectors aligned to all_dates with None where not applicable
         hist_map = dict(zip(hist_group["ds"], hist_group["y"]))
+        test_map = dict(zip(test_group["ds"], test_group["y"]))
         p10_map = dict(zip(q_group["ds"], q_group["lightgbm_p10"]))
         p50_map = dict(zip(q_group["ds"], q_group["lightgbm"]))
         p90_map = dict(zip(q_group["ds"], q_group["lightgbm_p90"]))
@@ -279,6 +307,9 @@ def _build_forecasts(
 
         hist = np.array(
             [hist_map.get(d, np.nan) for d in all_dates], dtype="float64"
+        )
+        actual_h = np.array(
+            [test_map.get(d, np.nan) for d in all_dates], dtype="float64"
         )
         p10 = np.array([p10_map.get(d, np.nan) for d in all_dates], dtype="float64")
         p50 = np.array([p50_map.get(d, np.nan) for d in all_dates], dtype="float64")
@@ -291,6 +322,7 @@ def _build_forecasts(
                 sku=meta,
                 dates=date_strs,
                 historical=_clean(hist),
+                actual_holdout=_clean(actual_h),
                 p10=_clean(p10),
                 p50=_clean(p50),
                 p90=_clean(p90),

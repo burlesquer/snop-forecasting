@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 const SERIES_LABELS: Record<string, string> = {
   band: "P10-P90 신뢰구간",
   historical: "실적",
+  actual_holdout: "실제 (홀드아웃)",
   p50: "예측 P50",
 };
 
@@ -31,6 +32,15 @@ export function SkuTimeSeries({ data }: { data: ForecastsJSON }) {
   const [selectedId, setSelectedId] = useState(data.skus[0]?.sku.id ?? "");
   const [skuFilter, setSkuFilter] = useState<string>("");
   const [highlightIdx, setHighlightIdx] = useState<number>(0);
+
+  // Guard against stale selectedId — if data reloads and the previously
+  // selected SKU is gone, snap to the first option instead of rendering blank.
+  useEffect(() => {
+    if (data.skus.length === 0) return;
+    if (!data.skus.some((s) => s.sku.id === selectedId)) {
+      setSelectedId(data.skus[0].sku.id);
+    }
+  }, [data.skus, selectedId]);
 
   const filteredSkus = useMemo(() => {
     const q = skuFilter.trim().toLowerCase();
@@ -65,6 +75,7 @@ export function SkuTimeSeries({ data }: { data: ForecastsJSON }) {
     return selected.dates.map((d, i) => ({
       date: d,
       historical: selected.historical[i],
+      actual_holdout: selected.actual_holdout?.[i] ?? null,
       p50: selected.p50[i],
       band:
         selected.p10[i] !== null && selected.p90[i] !== null
@@ -180,7 +191,17 @@ export function SkuTimeSeries({ data }: { data: ForecastsJSON }) {
                 tick={{ fontSize: 12, fill: "var(--color-muted)" }}
                 interval={Math.floor(rows.length / 6)}
               />
-              <YAxis tick={{ fontSize: 12, fill: "var(--color-muted)" }} width={40} />
+              <YAxis
+                tick={{ fontSize: 12, fill: "var(--color-muted)" }}
+                width={56}
+                label={{
+                  value: "일별 수요 (units)",
+                  angle: -90,
+                  position: "insideLeft",
+                  offset: 12,
+                  style: { fontSize: 11, fill: "var(--color-muted)", textAnchor: "middle" },
+                }}
+              />
               <Tooltip
                 cursor={{
                   stroke: "var(--color-accent)",
@@ -219,6 +240,20 @@ export function SkuTimeSeries({ data }: { data: ForecastsJSON }) {
                 connectNulls={false}
                 isAnimationActive={false}
                 name="historical"
+              />
+              {/* Holdout actuals — dashed gray to signal "model did not see this".
+                  Visual storytelling: P50 line is what we predicted; actual is
+                  what really happened. Delta = error, viewable per-day. */}
+              <Line
+                type="monotone"
+                dataKey="actual_holdout"
+                stroke="var(--color-text-strong)"
+                strokeWidth={1.5}
+                strokeDasharray="4 4"
+                dot={false}
+                connectNulls={false}
+                isAnimationActive={false}
+                name="actual_holdout"
               />
               <Line
                 type="monotone"

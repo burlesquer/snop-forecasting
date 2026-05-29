@@ -48,9 +48,21 @@ export function InventorySimulator({
   const [selectedId, setSelectedId] = useState<string>(
     skuOptions[0]?.forecast.sku.id ?? "",
   );
-  const [orderQty, setOrderQty] = useState<number>(0);
+  // String-backed numeric input — feels natural to type without fighting a
+  // pre-filled "0" or native spinner arrows. Empty → 0 for the math.
+  const [orderQtyText, setOrderQtyText] = useState<string>("");
+  const orderQty = Number(orderQtyText) || 0;
   const [skuFilter, setSkuFilter] = useState<string>("");
   const [highlightIdx, setHighlightIdx] = useState<number>(0);
+
+  // Guard against stale selectedId — if data reloads and the previously
+  // selected SKU is gone, snap to the first option instead of rendering blank.
+  useEffect(() => {
+    if (skuOptions.length === 0) return;
+    if (!skuOptions.some((o) => o.forecast.sku.id === selectedId)) {
+      setSelectedId(skuOptions[0].forecast.sku.id);
+    }
+  }, [skuOptions, selectedId]);
 
   const filteredOptions = useMemo(() => {
     const q = skuFilter.trim().toLowerCase();
@@ -249,11 +261,14 @@ export function InventorySimulator({
           </label>
           <input
             id="order-qty"
-            type="number"
-            min={0}
-            step={1}
-            value={orderQty}
-            onChange={(e) => setOrderQty(Math.max(0, Number(e.target.value || 0)))}
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            placeholder="0"
+            value={orderQtyText}
+            onChange={(e) => setOrderQtyText(e.target.value.replace(/[^\d]/g, ""))}
+            onFocus={(e) => e.target.select()}
+            aria-label="발주 수량 (단위)"
             className={cn(
               "mt-1 block w-full rounded-md border border-border-strong bg-surface px-3 min-h-11 text-sm font-tabular",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1",
@@ -357,9 +372,16 @@ export function InventorySimulator({
                 />
                 <YAxis
                   tick={{ fontSize: 12, fill: "var(--color-muted)" }}
-                  width={40}
+                  width={56}
                   domain={[0, "auto"]}
                   allowDataOverflow={false}
+                  label={{
+                    value: "재고 (units)",
+                    angle: -90,
+                    position: "insideLeft",
+                    offset: 12,
+                    style: { fontSize: 11, fill: "var(--color-muted)", textAnchor: "middle" },
+                  }}
                 />
                 <Tooltip
                   formatter={(v, _name, payload) => {
