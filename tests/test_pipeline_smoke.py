@@ -182,3 +182,99 @@ def test_ts_types_file_exists() -> None:
     # Spot-check key interfaces are present
     for marker in ("KPIsJSON", "ForecastsJSON", "ModelComparisonJSON", "InventorySignalsJSON", "SHAPJSON"):
         assert f"export interface {marker}" in content, f"Missing {marker} in TS types"
+
+
+# ── Regression tests for recent simulator math fixes ──────────────
+# These guard against ISSUE-001 (simulator gauge unresponsive to orderQty)
+# and ISSUE-003 (KPI service_level regression from horizon-prob mean).
+# If you change ml.inventory.stockout_probability or compute_signals math,
+# expect these to break — that's the point.
+
+def _make_synthetic_forecast(n_days: int = 28, daily_mean: float = 10.0) -> tuple:
+    """Helper: return (p10, p50, p90) arrays with a fixed σ ≈ 1.95 daily."""
+    import numpy as np
+    p50 = np.full(n_days, daily_mean, dtype="float64")
+    p10 = p50 - 2.5
+    p90 = p50 + 2.5
+    return p10, p50, p90
+
+
+def test_stockout_simulator_responds_to_order_qty() -> None:
+    """ISSUE-001 regression: increasing orderQty must lower horizon-stockout prob.
+
+    Before the dual-prob fix, the gauge was driven only by lead-time math, so
+    large orders made no difference. This locks in the new behavior.
+    """
+    from ml.inventory import stockout_probability
+    p10, p50, p90 = _make_synthetic_forecast(daily_mean=10.0)
+    # Stock 30 units, demand 280 over 28d — short by ~250 without order
+    no_order = stockout_probability(
+        current_stock=30, p50_daily=p50, p10_daily=p10, p90_daily=p90, order_qty=0
+    )
+    big_order = stockout_probability(
+        current_stock=30, p50_daily=p50, p10_daily=p10, p90_daily=p90, order_qty=500
+    )
+    assert no_order["stockout_probability_horizon"] > 0.9, (
+        f"Expected high horizon-stockout without order, got "
+        f"{no_order['stockout_probability_horizon']:.3f}"
+    )
+    assert big_order["stockout_probability_horizon"] < 0.05, (
+        f"Expected near-zero horizon-stockout with 500-unit order, got "
+        f"{big_order['stockout_probability_horizon']:.3f}"
+    )
+
+
+def test_stockout_dual_prob_consistency() -> None:
+    """ISSUE-003: stockout_probability must equal max(lead, horizon).
+
+    Service level KPI uses the lead probability; the gauge uses max(). If
+    these decouple, the dashboard tells inconsistent stories.
+    """
+    from ml.inventory import stockout_probability
+    p10, p50, p90 = _make_synthetic_forecast(daily_mean=10.0)
+    result = stockout_probability(
+        current_stock=50, p50_daily=p50, p10_daily=p10, p90_daily=p90, order_qty=100
+    )
+    expected = max(
+        result["stockout_probability_lead"],
+        result["stockout_probability_horizon"],
+    )
+    assert abs(result["stockout_probability"] - expected) < 1e-9, (
+        f"stockout_probability ({result['stockout_probability']}) "
+        f"must equal max(lead={result['stockout_probability_lead']}, "
+        f"horizon={result['stockout_probability_horizon']}) = {expected}"
+    )
+
+
+def test_high_risk_skus_have_positive_recommended_order(parsed_files) -> None:
+    """Recent fix: recommended_order = max(0, demand_28d + SS - stock).
+
+    Before, it used (ROP - stock), which could leave high-horizon-risk SKUs
+    with rec=0 — exactly the SKUs that prompt the user to act. Risk table
+    showing "-" for 권장 발주 was the visible symptom.
+    """
+    inv = parsed_files["inventory_signals.json"]
+    for r in inv.risk_top5:
+        # Risk top5 by definition have elevated stockout — they must always
+        # have a positive recommendation, otherwise the table is useless.
+        assert r.recommended_order > 0, (
+            f"Risk SKU {r.sku.id} has stockout={r.stockout_probability:.2f} "
+            f"but recommended_order={r.recommended_order} — should be positive."
+        )
+
+
+def test_kpi_service_level_uses_lead_time_probability(parsed_files) -> None:
+    """ISSUE-003 regression: service_level must be derived from lead-prob mean.
+
+    Using horizon-prob mean collapsed the KPI to ~43% (because horizon prob
+    is naturally higher). Verifies the metric stays in the executive-meaningful
+    "this week" framing.
+    """
+    inv = parsed_files["inventory_signals.json"]
+    kpis = parsed_files["kpis.json"]
+    # Service level should not be dramatically lower than (1 - mean horizon prob)
+    # would imply — i.e., should be ≥ 70% for this demo dataset.
+    assert kpis.service_level.value_raw >= 0.70, (
+        f"Service level {kpis.service_level.value_raw:.2%} suspiciously low — "
+        f"check if it's accidentally using horizon stockout instead of lead."
+    )

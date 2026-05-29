@@ -1,21 +1,27 @@
 """
 Inventory signals: safety stock, reorder point, stockout probability per SKU.
 
-Formulas used (S&OP textbook):
+Formulas used (S&OP textbook + extensions):
   Safety stock:    SS = Z * σ_demand * √L
-  Reorder point:   ROP = mean_demand_during_lead * L + SS
-  Stockout prob:   Φ(-(current_stock - μ_lead) / σ_lead)   normal approx
+  Reorder point:   ROP = mean_demand_during_lead + SS
+  Stockout prob:   max(P_lead, P_horizon) — two-phase normal approximation:
+                     P_lead    = P(demand > current_stock) over [0, L)
+                                 — orderQty has NOT arrived yet
+                     P_horizon = P(28d demand > current_stock + orderQty) over full horizon
+                                 — order has arrived by then
+                   Returned separately for KPI vs simulator use cases:
+                     stockout_probability_lead    → "this-week urgent" risk count + service level
+                     stockout_probability         → max(lead, horizon), shown on simulator gauge
 
 Where:
   Z          = 1.6449 for 95% service level
-  σ_demand   = derived from (P90 - P10) / 2.56 ≈ 1 std-dev of forecast spread
+  σ_demand   = derived from (P90 - P10) / 2.5631 ≈ 1 std-dev of forecast spread
   L          = LEAD_TIME_DAYS (assumed constant)
-  μ_lead     = mean(P50) over the lead time window
-  σ_lead     = σ_demand * √L
+  μ_lead     = sum(P50) over the lead time window
 
 The simulator function exposed at the bottom is the math the frontend
 must replicate in TypeScript for the interactive 시뮬레이터 widget.
-Keep both implementations in sync — there is a snapshot test.
+Keep both implementations in sync — see comment on P10_P90_TO_SIGMA below.
 """
 from __future__ import annotations
 
@@ -41,7 +47,11 @@ KRW_PER_UNIT = 12_000.0          # Avg cosmetics unit price (₩) for revenue ca
 INITIAL_STOCK_DAYS_MEAN = 21.0   # Synthesized current stock midpoint (days of P50 demand)
 INITIAL_STOCK_DAYS_SPREAD = 18.0 # ± half-range applied via SKU-id hash → realistic mix
                                   #   of under-stocked (risk) and over-stocked (excess) SKUs
-P10_P90_TO_SIGMA = 2.5631        # 80% interval / 2 to convert to σ
+# 80% interval / 2 to convert to σ (Φ⁻¹(0.9) ≈ 1.2816, so width ≈ 2 × 1.2816)
+# IMPORTANT: this constant is duplicated in dashboard/lib/inventory-simulator.ts.
+# Both must stay in sync or the simulator gauge will diverge from the baseline
+# inventory_signals.json data. Update both files together.
+P10_P90_TO_SIGMA = 2.5631
 
 
 @dataclass(frozen=True)
@@ -81,9 +91,11 @@ def stockout_probability(
     """Single-SKU stockout simulator. Replicated client-side in TypeScript.
 
     Inputs are 28-day daily forecasts. Returns:
-      stockout_probability — normal-CDF estimate over the lead time window
-      days_until_stockout  — first day cumulative P50 demand > current_stock + arriving order
-      projected_inventory  — list[float], end-of-day inventory across 28 days
+      stockout_probability         — max(P_lead, P_horizon), shown on simulator gauge
+      stockout_probability_lead    — P(stockout in lead time only), KPI semantics
+      stockout_probability_horizon — P(stockout in 28d given current+orderQty)
+      days_until_stockout          — first day cumulative P50 demand > current_stock + arriving order
+      projected_inventory          — list[float], end-of-day inventory across 28 days
     """
     horizon = len(p50_daily)
     # Inventory trajectory: stock arrives at day `order_lead_time`
@@ -147,72 +159,82 @@ def _pivot_quantiles(predictions: pd.DataFrame) -> pd.DataFrame:
     return wide.sort_values(["unique_id", "ds"]).reset_index(drop=True)
 
 
+def _synthesize_current_stock(sku_id: str, daily_demand_estimate: float) -> int:
+    """Deterministic per-SKU current stock — realistic mix of risk + excess SKUs.
+
+    The hash makes choices reproducible across runs while spanning both
+    under-stocked (→ risk table) and over-stocked (→ excess table) cases.
+    """
+    sku_digest = hashlib.sha256(sku_id.encode("utf-8")).digest()
+    hash_pct = int.from_bytes(sku_digest[:4], "big") / 0xFFFFFFFF  # ∈ [0, 1)
+    stock_days = (
+        INITIAL_STOCK_DAYS_MEAN
+        + (hash_pct - 0.5) * 2 * INITIAL_STOCK_DAYS_SPREAD
+    )
+    return max(1, int(round(daily_demand_estimate * stock_days)))
+
+
+def _compute_sku_metrics(
+    sku_id: str, p10: np.ndarray, p50: np.ndarray, p90: np.ndarray
+) -> InventoryRow:
+    """Pure function: forecast arrays → one InventoryRow. Easy to unit-test."""
+    demand_28d = float(p50.sum())
+    p90_28d = float(p90.sum())
+
+    # Daily σ from quantile spread → safety stock over lead time
+    sigma_daily = float(np.mean((p90 - p10) / P10_P90_TO_SIGMA))
+    sigma_lead = sigma_daily * math.sqrt(LEAD_TIME_DAYS)
+    ss = Z_95 * sigma_lead
+    mu_lead = float(p50[:LEAD_TIME_DAYS].sum())
+    rop = mu_lead + ss
+
+    daily_demand_estimate = max(1e-3, demand_28d / HORIZON_DAYS)
+    current_stock = _synthesize_current_stock(sku_id, daily_demand_estimate)
+
+    sim = stockout_probability(
+        current_stock=current_stock, p50_daily=p50, p10_daily=p10, p90_daily=p90
+    )
+
+    # Recommended order — cover full 28-day horizon demand + safety stock.
+    # Using (ROP - current_stock) would miss horizon-stockout SKUs whose
+    # current stock happens to exceed the lead-time reorder point.
+    target_inventory = demand_28d + ss
+    rec = max(0, int(math.ceil(target_inventory - current_stock)))
+
+    # Turnover (annual) = 365 / days_of_supply.
+    # Floor at 0.1 day so fast-turnover SKUs aren't artificially capped at 365×.
+    daily_demand = max(1e-6, demand_28d / HORIZON_DAYS)
+    days_of_supply = current_stock / daily_demand
+    turnover = 365.0 / max(days_of_supply, 0.1)
+
+    return InventoryRow(
+        sku_id=sku_id,
+        current_stock=current_stock,
+        forecast_28d_demand=demand_28d,
+        forecast_28d_p90=p90_28d,
+        safety_stock=ss,
+        reorder_point=rop,
+        stockout_probability_lead=float(sim["stockout_probability_lead"]),
+        stockout_probability=float(sim["stockout_probability"]),
+        days_until_stockout=sim["days_until_stockout"],  # int | None
+        recommended_order=rec,
+        turnover_rate_annual=turnover,
+    )
+
+
 def compute_signals(predictions: pd.DataFrame) -> list[InventoryRow]:
-    """Per-SKU inventory metrics. Returns list of InventoryRow."""
+    """Per-SKU inventory metrics. Orchestrator over _compute_sku_metrics."""
     wide = _pivot_quantiles(predictions)
     rows: list[InventoryRow] = []
-
     for sku, group in wide.groupby("unique_id", sort=False):
-        p10 = group["p10"].to_numpy()
-        p50 = group["p50"].to_numpy()
-        p90 = group["p90"].to_numpy()
-
-        demand_28d = float(p50.sum())
-        p90_28d = float(p90.sum())
-        # Daily σ estimate from quantile spread, then SS over lead time
-        sigma_daily = float(np.mean((p90 - p10) / P10_P90_TO_SIGMA))
-        sigma_lead = sigma_daily * math.sqrt(LEAD_TIME_DAYS)
-        ss = Z_95 * sigma_lead
-        mu_lead = float(p50[:LEAD_TIME_DAYS].sum())
-        rop = mu_lead + ss
-
-        # Synthesize current stock — deterministic per SKU but with realistic variance.
-        # Some SKUs will be under-stocked (→ risk table), others over-stocked (→ excess
-        # table). The hash makes the choice reproducible across runs.
-        sku_digest = hashlib.sha256(str(sku).encode("utf-8")).digest()
-        hash_pct = int.from_bytes(sku_digest[:4], "big") / 0xFFFFFFFF  # ∈ [0, 1)
-        stock_days = (
-            INITIAL_STOCK_DAYS_MEAN
-            + (hash_pct - 0.5) * 2 * INITIAL_STOCK_DAYS_SPREAD
-        )
-        daily_demand_estimate = max(1e-3, demand_28d / HORIZON_DAYS)
-        current_stock = max(1, int(round(daily_demand_estimate * stock_days)))
-
-        sim = stockout_probability(
-            current_stock=current_stock,
-            p50_daily=p50,
-            p10_daily=p10,
-            p90_daily=p90,
-        )
-
-        # Recommended order — cover full 28-day horizon demand + safety stock.
-        # Previously used (ROP - current_stock) which ignores horizon stockout:
-        # a SKU could have 80% horizon-stockout risk but ROP-rec = 0 because
-        # current stock happened to exceed the lead-time reorder point.
-        target_inventory = demand_28d + ss
-        rec = max(0, int(math.ceil(target_inventory - current_stock)))
-
-        # Turnover (annual) = 365 / days_of_supply, days_of_supply = stock / daily_demand
-        daily_demand = max(1e-6, demand_28d / HORIZON_DAYS)
-        days_of_supply = current_stock / daily_demand
-        turnover = 365.0 / max(days_of_supply, 1.0)
-
         rows.append(
-            InventoryRow(
-                sku_id=str(sku),
-                current_stock=current_stock,
-                forecast_28d_demand=demand_28d,
-                forecast_28d_p90=p90_28d,
-                safety_stock=ss,
-                reorder_point=rop,
-                stockout_probability_lead=float(sim["stockout_probability_lead"]),
-                stockout_probability=float(sim["stockout_probability"]),
-                days_until_stockout=sim["days_until_stockout"],  # int | None
-                recommended_order=rec,
-                turnover_rate_annual=turnover,
+            _compute_sku_metrics(
+                str(sku),
+                group["p10"].to_numpy(),
+                group["p50"].to_numpy(),
+                group["p90"].to_numpy(),
             )
         )
-
     log.info("Computed inventory signals for %d SKUs", len(rows))
     return rows
 

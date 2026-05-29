@@ -92,6 +92,9 @@ tablet-*.png
 after-*.png
 before-*.png
 qa-*.png
+# Loose screenshots from dev iterations — not source assets
+/*.png
+/dashboard/*.png
 
 # ── /qa report output (local, not committed) ──
 .gstack/

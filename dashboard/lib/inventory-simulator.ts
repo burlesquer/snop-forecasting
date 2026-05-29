@@ -19,6 +19,9 @@
  * Both σ values come from the P90-P10 spread / 2.5631 (80% interval ≈ ±1.28σ).
  */
 
+// IMPORTANT: this constant is duplicated in ml/inventory.py (P10_P90_TO_SIGMA).
+// Both must stay in sync or the simulator gauge will diverge from the baseline
+// inventory_signals.json data. Update both files together.
 const P10_P90_TO_SIGMA = 2.5631;
 const DEFAULT_LEAD_TIME = 7;
 
